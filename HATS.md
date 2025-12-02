@@ -190,28 +190,91 @@ When wearing a hat, Claude will:
 
 ### Code Review Hat
 
-**Focus**: Reviewing code for issues and improvements
+**Focus**: Deep-dive code review with full codebase access and web research
 
 **When to use**:
+- Comprehensive code audit before release
+- Security review of user-facing features
 - Reviewing changes before commit
 - Auditing existing code quality
-- Looking for potential issues
+- Comparing implementation against best practices
+
+**Capabilities** (Claude has access to):
+- **Full codebase**: Read all source files, tests, configs
+- **Web research**: Search for best practices, OWASP guidelines, library docs
+- **Cross-reference**: Compare against similar implementations online
+- **Dependency analysis**: Check for known vulnerabilities in patterns used
 
 **Principles**:
 - Check for correctness first
-- Look for potential bugs
-- Consider edge cases
+- Look for potential bugs and security issues
+- Consider edge cases and error handling
+- Research best practices for the domain (web security, database, etc.)
 - Note style issues separately from bugs
+- Provide actionable recommendations with severity
 
-**Checklist**:
+**Review Workflow**:
+1. **Scope**: Identify files/classes to review
+2. **Read**: Deep-dive into the code
+3. **Research**: Web search for relevant best practices, vulnerabilities, patterns
+4. **Analyze**: Compare code against findings
+5. **Report**: Categorized findings with severity and recommendations
+
+**Checklist - Correctness**:
 - [ ] Logic is correct
-- [ ] Edge cases handled
-- [ ] Contracts are appropriate
-- [ ] No obvious bugs
-- [ ] Code is readable
-- [ ] No security issues
+- [ ] Edge cases handled (empty, null, boundary values)
+- [ ] Error conditions handled appropriately
+- [ ] Contracts (preconditions/postconditions) are appropriate
+- [ ] Invariants maintained
 
-**Output**: List of findings categorized by severity
+**Checklist - Security** (research OWASP if needed):
+- [ ] Input validation/sanitization
+- [ ] No injection vulnerabilities (SQL, XSS, command)
+- [ ] Authentication/authorization correct
+- [ ] Sensitive data protected
+- [ ] No hardcoded secrets
+
+**Checklist - Eiffel-Specific**:
+- [ ] Void safety (proper use of `attached`, `detachable`)
+- [ ] Design by Contract coverage
+- [ ] Proper use of `once` functions for singletons
+- [ ] ARRAYED_LIST.has vs value equality (`~`)
+- [ ] STRING_8 vs STRING_32 handling
+
+**Checklist - Quality**:
+- [ ] Code is readable and well-named
+- [ ] No unnecessary complexity
+- [ ] DRY (no duplicated logic)
+- [ ] Follows existing patterns in codebase
+
+**Severity Levels**:
+- **Critical**: Security vulnerability, data loss risk, crash
+- **High**: Bug that affects functionality, contract violation
+- **Medium**: Edge case not handled, missing validation
+- **Low**: Style issue, minor improvement, documentation gap
+
+**Output Format**:
+```
+## Code Review: [Class/Feature Name]
+
+### Critical
+- [Issue description] - [File:Line] - [Recommendation]
+
+### High
+- [Issue description] - [File:Line] - [Recommendation]
+
+### Medium
+- [Issue description] - [File:Line] - [Recommendation]
+
+### Low
+- [Issue description] - [File:Line] - [Recommendation]
+
+### Research Notes
+- [Relevant best practices found]
+- [Links to documentation/guidelines consulted]
+```
+
+**Avoid**: Making changes during review (note for later), scope creep beyond review
 
 ---
 
@@ -430,6 +493,7 @@ Claude will adapt the focused approach to your specific need.
 
 | Date | Change |
 |------|--------|
+| 2025-12-02 | Expanded Code Review Hat with web research, security checklists, severity levels |
 | 2025-12-02 | Profiler Hat: Segfaults usually mean corrupted EIFGENs - use clean compile |
 | 2025-12-02 | Profiler Hat: Corrected ECF syntax (`profile="true"` on `<option>`, not `<setting>`) |
 | 2025-12-02 | Added SCOOP hat for concurrency analysis and implementation |
