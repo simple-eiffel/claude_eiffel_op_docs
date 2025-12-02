@@ -591,3 +591,71 @@ has_value (a_list: ARRAYED_LIST [STRING]; a_value: STRING): BOOLEAN
 ```
 **Note**: ARRAYED_LIST.has uses reference equality. Use `~` operator in across loop for value comparison.
 **Verified**: 2025-12-02, EiffelStudio 25.02
+
+---
+
+## JSON Serialization Patterns (simple_json)
+
+### Entity Serialization with SIMPLE_JSON_SERIALIZABLE
+```eiffel
+class MY_ENTITY
+inherit
+    SIMPLE_JSON_SERIALIZABLE
+
+feature -- JSON Serialization
+    to_json: SIMPLE_JSON_OBJECT
+        do
+            create Result.make
+            Result.put_integer (id, "id")
+            Result.put_string (name, "name")
+            if attached email as e then
+                Result.put_string (e, "email")
+            end
+        end
+
+feature -- JSON Deserialization
+    apply_json (a_json: SIMPLE_JSON_OBJECT)
+        do
+            if attached a_json.string_item ("name") as n then
+                name := n.to_string_8
+            end
+            if attached a_json.optional_string ("email") as e then
+                email := e.to_string_8
+            end
+        end
+
+feature -- Validation
+    json_has_required_fields (a_json: SIMPLE_JSON_OBJECT): BOOLEAN
+        do
+            Result := a_json.has_all_keys (<<"id", "name">>)
+        end
+end
+```
+**Verified**: 2025-12-02, EiffelStudio 25.02
+
+### Friction-Free JSON Field Handling
+```eiffel
+-- Multiple required field check (instead of has_key && has_key)
+if json.has_all_keys (<<"title", "priority">>) then
+    -- All required fields present
+end
+
+-- Direct INTEGER_32 extraction (instead of .to_integer_32)
+l_priority := json.integer_32_item ("priority")
+
+-- Optional string (returns detachable)
+if attached json.optional_string ("description") as d then
+    l_description := d.to_string_8
+end
+
+-- Optional with default value
+l_page := json.optional_integer ("page", 1)          -- Default 1
+l_active := json.optional_boolean ("active", True)    -- Default True
+
+-- Get list of missing required fields
+l_missing := json.missing_keys (<<"name", "email", "age">>)
+across l_missing as m loop
+    print ("Missing: " + m + "%N")
+end
+```
+**Verified**: 2025-12-02, EiffelStudio 25.02
