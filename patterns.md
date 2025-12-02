@@ -489,3 +489,105 @@ body: STRING_8
 ```
 **Note**: `read_string` is a PROCEDURE, not a function. It populates `last_string`.
 **Verified**: 2025-12-02, EiffelStudio 25.02
+
+### Middleware Pipeline Pattern
+```eiffel
+deferred class SIMPLE_WEB_MIDDLEWARE
+
+feature -- Access
+    name: STRING
+        deferred end
+
+feature -- Processing
+    process (a_request: SIMPLE_WEB_SERVER_REQUEST;
+             a_response: SIMPLE_WEB_SERVER_RESPONSE;
+             a_next: PROCEDURE)
+            -- Process request, call a_next to continue chain
+        deferred
+        end
+end
+
+class SIMPLE_WEB_MIDDLEWARE_PIPELINE
+
+feature -- Access
+    middlewares: ARRAYED_LIST [SIMPLE_WEB_MIDDLEWARE]
+
+feature -- Element Change
+    use (a_middleware: SIMPLE_WEB_MIDDLEWARE)
+        do
+            middlewares.extend (a_middleware)
+        end
+
+feature -- Execution
+    execute (a_request: SIMPLE_WEB_SERVER_REQUEST;
+             a_response: SIMPLE_WEB_SERVER_RESPONSE;
+             a_handler: PROCEDURE)
+        do
+            execute_from_index (1, a_request, a_response, a_handler)
+        end
+
+feature {NONE} -- Implementation
+    execute_from_index (a_index: INTEGER;
+                        a_request: SIMPLE_WEB_SERVER_REQUEST;
+                        a_response: SIMPLE_WEB_SERVER_RESPONSE;
+                        a_handler: PROCEDURE)
+        do
+            if a_index > middlewares.count then
+                a_handler.call (Void)
+            else
+                middlewares.i_th (a_index).process (
+                    a_request,
+                    a_response,
+                    agent execute_from_index (a_index + 1, a_request, a_response, a_handler)
+                )
+            end
+        end
+end
+```
+**Note**: Uses recursive agents to chain middleware. Each middleware receives `a_next` to continue the chain.
+**Verified**: 2025-12-02, EiffelStudio 25.02
+
+---
+
+## Windows Process Patterns
+
+### Environment Variables with cmd /c
+```eiffel
+build_command (a_project: CI_PROJECT): STRING_32
+        -- Build command with environment variables for Windows
+    do
+        create Result.make (500)
+        -- Wrap in cmd /c with SET commands
+        Result.append ("cmd /c %"")
+
+        -- Add SET commands chained with &&
+        across a_project.environment_variables as ic loop
+            Result.append ("set ")
+            Result.append (ic.key)
+            Result.append ("=")
+            Result.append (ic.item)
+            Result.append (" && ")
+        end
+
+        -- Add the actual command
+        Result.append ("%"")
+        Result.append (ec_path)
+        Result.append ("%" -batch -config ...")
+
+        -- Close cmd /c quote
+        Result.append ("%"")
+    end
+```
+**Note**: Windows requires `set VAR=value &&` syntax, not Unix-style `VAR=value command`.
+**Verified**: 2025-12-02, EiffelStudio 25.02
+
+### Value Equality Check for Collections
+```eiffel
+has_value (a_list: ARRAYED_LIST [STRING]; a_value: STRING): BOOLEAN
+        -- Does list contain value (using value equality)?
+    do
+        Result := across a_list as ic some ic ~ a_value end
+    end
+```
+**Note**: ARRAYED_LIST.has uses reference equality. Use `~` operator in across loop for value comparison.
+**Verified**: 2025-12-02, EiffelStudio 25.02

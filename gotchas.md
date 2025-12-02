@@ -267,6 +267,92 @@ inherit
 
 ---
 
+## Windows Command Execution
+
+### SIMPLE_PROCESS_HELPER and Environment Variables
+- **Docs say**: (internal) Pass command line to `output_of_command`
+- **Reality**: The helper splits by spaces, breaking `VAR="value" command` syntax
+- **Verified**: 2025-12-02, EiffelStudio 25.02
+- **Solution**: Wrap in `cmd /c "set VAR=value && command"` pattern
+- **Example**:
+```eiffel
+-- WRONG: Split by space breaks this
+l_cmd := "SIMPLE_JSON=%"D:\prod\simple_json%" ec.exe -batch ..."
+
+-- CORRECT: Use cmd /c with set commands
+l_cmd := "cmd /c %"set SIMPLE_JSON=D:\prod\simple_json && ec.exe -batch ...%""
+```
+
+### Working Directory for External Processes
+- **Docs say**: (not documented)
+- **Reality**: Pass directory as second parameter to `output_of_command`
+- **Verified**: 2025-12-02, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- Run ec.exe in project directory so EIFGENs is created there
+l_output := process_helper.output_of_command (l_cmd, project_directory)
+```
+
+---
+
+## Collection Equality
+
+### ARRAYED_LIST.has Uses Reference Equality
+- **Docs say**: (expected) `has` checks if item is in list
+- **Reality**: `has` uses `=` (reference equality), not `~` (value equality)
+- **Verified**: 2025-12-02, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: Uses reference equality - won't find equal string
+if l_origins.has ("https://example.com") then ...
+
+-- CORRECT: Use across with value equality operator
+if across l_origins as ic some ic ~ "https://example.com" end then ...
+
+-- Or create a helper function
+has_origin (a_list: ARRAYED_LIST [STRING]; a_origin: STRING): BOOLEAN
+    do
+        Result := across a_list as ic some ic ~ a_origin end
+    end
+```
+
+---
+
+## Agent Limitations
+
+### Inline Agents Cannot Access Local Variables
+- **Docs say**: (not clear)
+- **Reality**: Inline agents cannot capture or modify local variables
+- **Verified**: 2025-12-02, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: Inline agent can't access l_executed
+local
+    l_executed: BOOLEAN
+do
+    l_pipeline.execute (request, response, agent do l_executed := True end)
+    assert (l_executed)
+
+-- CORRECT: Use class attribute and named agent
+feature {NONE} -- Test state
+    handler_executed: BOOLEAN
+
+    mark_handler_executed
+        do
+            handler_executed := True
+        end
+
+feature -- Test
+    test_pipeline
+        do
+            handler_executed := False
+            l_pipeline.execute (request, response, agent mark_handler_executed)
+            assert (handler_executed)
+        end
+```
+
+---
+
 ## Pending Investigation
 
 ### Across Loop Item Access

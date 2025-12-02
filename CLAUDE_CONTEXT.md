@@ -110,6 +110,31 @@ When reviewing or adding contracts, work in this order:
 
 ---
 
+## CI Tool: simple_ci
+
+Use `simple_ci.exe` to compile and test Eiffel projects:
+
+```batch
+:: Run all configured projects
+simple_ci.exe
+
+:: Run specific project with verbose output
+simple_ci.exe -p simple_web --verbose
+
+:: Fast incremental build (skip clean)
+simple_ci.exe -p simple_web --no-clean --verbose
+```
+
+Output files:
+- `ci_report.json` - Machine-readable (for Claude parsing)
+- `ci_report.txt` - Human-readable summary
+
+### Adding Projects to CI
+
+Edit `D:\prod\simple_ci\src\ci_config.e` to add new projects.
+
+---
+
 ## EIS (Eiffel Information System) Quick Reference
 
 Bidirectional linking between Eiffel source and external documentation:
@@ -129,6 +154,7 @@ note
 
 | Date | Change |
 |------|--------|
+| 2025-12-02 | Added simple_ci documentation, middleware patterns, Windows cmd patterns |
 | 2025-12-02 | Genericized - removed project-specific refs, added ROADMAP.md convention |
 | 2025-12-02 | Added profiler.md reference, expanded scoop.md |
 | 2025-12-01 | Added EIS documentation patterns |
