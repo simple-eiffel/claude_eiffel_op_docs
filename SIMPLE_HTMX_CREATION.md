@@ -493,4 +493,180 @@ The session also proved that AI-created libraries can be immediately useful in r
 
 ---
 
-*This after-action report documents the continuation from simple_htmx creation to first production use, closing the loop on the library extraction pattern.*
+# After-Action Report #2: Debugging the raw_html Accumulation Bug
+
+**Date:** December 3, 2024
+**Session Type:** Bug Fix / TDD Lesson
+
+## Executive Summary
+
+Following the integration, runtime testing revealed that only 1 of 7 controls appeared on the canvas. Root cause: the `raw_html` method in `HTMX_ELEMENT` was **overwriting** content instead of **accumulating** it. This bug and its resolution provide key lessons about TDD and debugging methodology.
+
+## The Bug
+
+### Symptom
+
+Manual testing showed only one control visible on the canvas, despite the spec file containing 7 controls.
+
+### Investigation
+
+1. **System log analysis** revealed all 7 controls WERE being loaded and processed
+2. Log showed each control being rendered through the loop
+3. But HTML output only contained the last control
+
+### Root Cause
+
+In `htmx_element.e`:
+
+```eiffel
+-- BUG: Assignment overwrites previous content
+raw_html (a_html: READABLE_STRING_GENERAL): like Current
+    do
+        content_text := a_html.to_string_32  -- WRONG!
+        Result := Current
+    end
+```
+
+When `render_canvas` looped through controls calling `raw_html` for each, only the last one survived.
+
+### Fix
+
+```eiffel
+-- CORRECT: Append accumulates content
+raw_html (a_html: READABLE_STRING_GENERAL): like Current
+    do
+        content_text.append (a_html.to_string_32)  -- Accumulate!
+        Result := Current
+    end
+```
+
+## TDD Lesson Learned
+
+**The mistake:** I fixed the bug FIRST, then wrote tests to verify it.
+
+**The correct approach (TDD):**
+1. Write a test that demonstrates the bug (expects accumulation, gets overwrite)
+2. Watch the test FAIL
+3. Fix the bug
+4. Watch the test PASS
+
+**Human feedback:** *"You are SUCH A JR. !!! :-) LOL"*
+
+This is a fundamental TDD principle - the failing test proves:
+1. The test actually tests what you think it tests
+2. The bug exists as you understand it
+3. Your fix actually addresses the bug
+
+Without seeing the test fail first, you can't be certain your test would have caught the bug.
+
+## Using Log Data to Shape Tests
+
+**Key insight from the debugging session:**
+
+The system log showed exactly what data was being processed:
+```
+[DEBUG] Loading control: title_heading
+[DEBUG] Loading control: description_textarea
+[DEBUG] Loading control: due_date_picker
+...
+```
+
+This log data should inform test setup:
+
+```eiffel
+test_raw_html_in_loop
+        -- Test raw_html in a loop pattern (simulates render_canvas).
+    local
+        l_row_div: HTMX_DIV
+        l_controls: ARRAYED_LIST [STRING]
+    do
+        -- Setup mirrors what we saw in logs
+        create l_controls.make (5)
+        l_controls.extend ("<div class=%"control%">Control 1</div>")
+        l_controls.extend ("<div class=%"control%">Control 2</div>")
+        l_controls.extend ("<div class=%"control%">Control 3</div>")
+        l_controls.extend ("<div class=%"control%">Control 4</div>")
+        l_controls.extend ("<div class=%"control%">Control 5</div>")
+
+        create l_row_div.make
+        across l_controls as l_ctrl loop
+            l_row_div.raw_html (l_ctrl).do_nothing
+        end
+
+        -- All controls must be present, not just the last
+        assert ("has control 1", l_row_div.to_html_8.has_substring ("Control 1"))
+        assert ("has control 5", l_row_div.to_html_8.has_substring ("Control 5"))
+    end
+```
+
+## DBC Priority Reminder
+
+During debugging, the human emphasized DBC priorities:
+
+1. **Class invariants** - Always true for an instance
+2. **Loop invariants** - True at start and end of each iteration
+3. **Check assertions** - Verify assumptions mid-routine
+4. **Preconditions** - What must be true before calling
+5. **Postconditions** - What will be true after returning
+
+**Key guidance:** *"Aggressive DBC is better than aggressive logging. Choose DBC before logging, but don't skimp on logging."*
+
+In this case, a postcondition on `raw_html` might have caught the bug:
+
+```eiffel
+raw_html (a_html: READABLE_STRING_GENERAL): like Current
+    require
+        not_empty: not a_html.is_empty
+    do
+        content_text.append (a_html.to_string_32)
+        Result := Current
+    ensure
+        content_grew: content_text.count >= old content_text.count + a_html.count
+    end
+```
+
+## Tests Added
+
+Three regression tests were added to `test_htmx_elements.e`:
+
+| Test | Purpose |
+|------|---------|
+| `test_raw_html_single_call` | Baseline - single call works |
+| `test_raw_html_multiple_calls_accumulate` | Multiple calls accumulate (the bug case) |
+| `test_raw_html_in_loop` | Loop pattern matching real-world usage |
+
+## Related Bugs Fixed in Same Session
+
+| Bug | Location | Issue | Fix |
+|-----|----------|-------|-----|
+| #1 | `is_valid_control_type` | ARRAY.has uses reference equality | Use `across...some` with `~` |
+| #2 | `append_attributes` | HASH_TABLE key_for_iteration in across loop | Use `from/until/loop` pattern |
+| #3 | `json_to_control` | Only accepting `row`/`col` keys | Accept both `row`/`col` and `grid_row`/`grid_col` |
+| #4 | `raw_html` | Assignment overwrites instead of appends | Use `.append()` |
+
+## Documentation Updates
+
+This session resulted in updates to:
+
+| Document | Addition |
+|----------|----------|
+| `gotchas.md` | HASH_TABLE iteration: `across` vs internal cursor |
+| `patterns.md` | Fluent builder content accumulation pattern |
+| `simple_htmx/README.md` | Roadmap and Known Issues section |
+| `simple_gui_designer/README.md` | Roadmap and Dependencies |
+| `simple_ci/config.json` | Added simple_htmx project |
+
+## Conclusion
+
+This debugging session reinforced fundamental software engineering principles:
+
+1. **TDD works:** Write the test first, watch it fail, then fix
+2. **Logs inform tests:** Use runtime log data to shape test scenarios
+3. **DBC > Logging:** Contracts catch bugs at their source; logs help diagnose after the fact
+4. **Fluent interfaces need care:** Content accumulation vs overwrite is a common bug pattern in builders
+
+The bug itself was trivial (`:=` vs `.append()`), but the process of finding it and ensuring it doesn't recur is what distinguishes robust software development.
+
+---
+
+*This second after-action report documents the debugging phase following integration, demonstrating that library creation → integration → debugging → hardening is a natural progression.*
