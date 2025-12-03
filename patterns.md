@@ -659,3 +659,210 @@ across l_missing as m loop
 end
 ```
 **Verified**: 2025-12-02, EiffelStudio 25.02
+
+---
+
+## Multiple Inheritance Patterns
+
+### God Class Extraction via Mixin Classes
+When a class has grown too large with multiple distinct feature groups, extract each group into a deferred "mixin" class that inherits from a shared state base:
+
+```
+                    SHARED_STATE (deferred)
+                           |
+    +----------+----------+----------+----------+
+    |          |          |          |          |
+HANDLER_A   HANDLER_B   HANDLER_C   RENDERER  ... (all deferred)
+    |          |          |          |          |
+    +----------+----------+----------+----------+
+                           |
+                     MAIN_CLASS (effective)
+```
+
+**Key Insight**: This pattern replaces pub-sub, dependency injection, or mediator patterns needed in single-inheritance languages. All handlers share state via inherited deferred features - they're literally the same `Current` at runtime.
+
+**Verified**: 2025-12-03, EiffelStudio 25.02
+
+### Shared State Base Class Pattern
+```eiffel
+deferred class
+    MY_SHARED_STATE
+
+feature -- Shared State (deferred - implemented by final class)
+
+    data_store: HASH_TABLE [MY_ITEM, STRING_32]
+            -- Shared data storage.
+        deferred
+        end
+
+    server: MY_SERVER
+            -- Server instance.
+        deferred
+        end
+
+feature -- Shared Helpers (effective - used by all handlers)
+
+    item_by_id (a_id: detachable STRING_32): detachable MY_ITEM
+            -- Find item by ID with null-safety.
+        do
+            if attached a_id as l_id then
+                Result := data_store.item (l_id)
+            end
+        end
+
+    send_not_found (a_response: MY_RESPONSE; a_type: STRING; a_id: detachable STRING_32)
+            -- Standard 404 response.
+        do
+            a_response.set_status (404)
+            a_response.send_json ("{%"error%":%"" + a_type + " not found%"}")
+        end
+
+    s8 (a_str: STRING_32): STRING_8
+            -- Quick STRING_32 to STRING_8 conversion.
+        do
+            Result := a_str.to_string_8
+        end
+
+end
+```
+**Note**: Deferred features define what state the mixins need. Effective features provide shared utilities.
+**Verified**: 2025-12-03, EiffelStudio 25.02
+
+### Handler Mixin Pattern
+```eiffel
+deferred class
+    MY_ITEM_HANDLERS
+
+inherit
+    MY_SHARED_STATE
+
+feature -- Route Setup
+
+    setup_item_routes
+            -- Register item routes with server.
+        do
+            server.on_get ("/api/items", agent handle_list_items)
+            server.on_get ("/api/items/{id}", agent handle_get_item)
+            server.on_post ("/api/items", agent handle_create_item)
+        end
+
+feature -- Handlers
+
+    handle_list_items (a_request: MY_REQUEST; a_response: MY_RESPONSE)
+        do
+            -- Uses inherited `data_store` directly
+            a_response.send_json (items_to_json (data_store))
+        end
+
+    handle_get_item (a_request: MY_REQUEST; a_response: MY_RESPONSE)
+        do
+            -- Uses inherited `item_by_id` helper
+            if attached item_by_id (a_request.path_parameter ("id")) as l_item then
+                a_response.send_json (l_item.to_json)
+            else
+                -- Uses inherited `send_not_found` helper
+                send_not_found (a_response, "Item", a_request.path_parameter ("id"))
+            end
+        end
+
+end
+```
+**Note**: Handler classes are deferred because they inherit deferred features from SHARED_STATE.
+**Verified**: 2025-12-03, EiffelStudio 25.02
+
+### Final Composition Class
+```eiffel
+class
+    MY_MAIN_SERVER
+
+inherit
+    MY_ITEM_HANDLERS
+    MY_USER_HANDLERS
+    MY_AUTH_HANDLERS
+    MY_RENDERER
+
+create
+    make
+
+feature {NONE} -- Initialization
+
+    make (a_port: INTEGER)
+        do
+            create server_impl.make (a_port)
+            create data_store_impl.make (100)
+            setup_item_routes
+            setup_user_routes
+            setup_auth_routes
+        end
+
+feature -- Access (Effectuate deferred features)
+
+    server: MY_SERVER
+        do
+            Result := server_impl
+        end
+
+    data_store: HASH_TABLE [MY_ITEM, STRING_32]
+        do
+            Result := data_store_impl
+        end
+
+feature {NONE} -- Implementation
+
+    server_impl: MY_SERVER
+    data_store_impl: HASH_TABLE [MY_ITEM, STRING_32]
+
+end
+```
+**Note**: No `undefine` clauses needed - Eiffel automatically joins deferred features.
+**Verified**: 2025-12-03, EiffelStudio 25.02
+
+### Diamond Problem Resolution
+When multiple inheritance paths share a common ancestor:
+
+```eiffel
+class CHILD
+inherit
+    PARENT_A
+        rename
+            feature_x as feature_x_from_a    -- Keep both with different names
+        undefine
+            feature_y                         -- Convert effective to deferred
+        redefine
+            feature_z                         -- Replace with new implementation
+        select
+            feature_w                         -- Resolve polymorphic ambiguity
+        end
+    PARENT_B
+        -- ... similar adaptation clauses
+        end
+```
+
+**When to use each:**
+- `rename`: Need both versions with different names
+- `undefine`: Parent provides default but you want other parent's version
+- `redefine`: Replace with completely new implementation
+- `select`: Multiple effective versions exist, pick one for dynamic dispatch
+
+**Feature Joining Rules:**
+- Deferred + Deferred = Single deferred (one implementation needed)
+- Deferred + Effective = Effective satisfies deferred (automatic)
+- Effective + Effective = Conflict (must use rename/undefine/select)
+
+**Common Error - VDUS(3):** "Undefine subclause lists deferred feature"
+- You cannot `undefine` an already-deferred feature
+- `undefine` converts effective → deferred, not the reverse
+- Fix: Remove the `undefine` clause; feature joining handles it
+
+**Verified**: 2025-12-03, EiffelStudio 25.02
+
+### When MI Replaces Other Patterns
+In single-inheritance languages, cross-component communication requires:
+- **Pub-sub/Events**: Components publish events, others subscribe
+- **Dependency Injection**: Pass dependencies through constructors
+- **Service Locator**: Global registry to find services
+- **Mediator**: Central coordinator knows all components
+
+Eiffel MI eliminates this ceremony: if `HTMX_HANDLERS` needs `RENDERER.render_canvas`, they simply share the same `Current`. No wiring, no indirection, no ceremony.
+
+**Verified**: 2025-12-03, EiffelStudio 25.02

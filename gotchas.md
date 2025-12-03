@@ -353,6 +353,38 @@ feature -- Test
 
 ---
 
+## Multiple Inheritance
+
+### VDUS(3) - Cannot Undefine Deferred Features
+- **Docs say**: Use `undefine` to resolve inheritance conflicts
+- **Reality**: `undefine` converts effective → deferred, NOT the reverse. You cannot undefine an already-deferred feature.
+- **Verified**: 2025-12-03, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: render_canvas is already deferred in GDS_HTML_RENDERER
+class GUI_DESIGNER_SERVER
+inherit
+    GDS_HTMX_HANDLERS
+        undefine
+            render_canvas  -- ERROR: VDUS(3) - feature is deferred!
+        end
+    GDS_HTML_RENDERER
+
+-- CORRECT: Just inherit both - feature joining handles it automatically
+class GUI_DESIGNER_SERVER
+inherit
+    GDS_HTMX_HANDLERS
+    GDS_HTML_RENDERER
+    -- Eiffel joins the deferred features automatically
+```
+
+### Feature Joining Rules
+- **Deferred + Deferred**: Single deferred feature (one implementation needed)
+- **Deferred + Effective**: Effective satisfies deferred (automatic, no clause needed)
+- **Effective + Effective**: Conflict - must use `rename`, `undefine`, or `select`
+
+---
+
 ## Pending Investigation
 
 ### Across Loop Item Access
