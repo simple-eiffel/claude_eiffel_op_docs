@@ -4,7 +4,20 @@
 
 Deploy an Eiffel-powered website to Oracle Cloud Free Tier that showcases the entire simple_* ecosystem. The site will demonstrate that a complete web application—server, database, HTML rendering, API—can be built end-to-end in Eiffel.
 
-**Goal**: A live, public website running on simple_web, backed by simple_sql, rendered with simple_htmx, proving AI-assisted Eiffel development is production-ready.
+**Goal**: A live, public website running on simple_web, backed by simple_sql, rendered with simple_htmx + simple_alpine, proving AI-assisted Eiffel development is production-ready.
+
+---
+
+## Build Order (Revised)
+
+| Phase | Task | Duration |
+|-------|------|----------|
+| 1 | **Build simple_alpine** | 10-12 hours |
+| 2 | **Build simple_showcase** (local dev) | 8-10 hours |
+| 3 | **Oracle + Cloudflare setup** | 2 hours |
+| 4 | **Deploy** | 1 hour |
+
+**Rationale**: Build and test locally first, deploy once when ready.
 
 ---
 
