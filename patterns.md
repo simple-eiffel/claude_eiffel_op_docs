@@ -856,6 +856,42 @@ inherit
 
 **Verified**: 2025-12-03, EiffelStudio 25.02
 
+---
+
+## Fluent Builder Patterns (simple_htmx)
+
+### Content Accumulation vs Overwrite
+When building fluent interfaces that add content (like HTML builders), decide whether methods should **accumulate** or **replace**:
+
+```eiffel
+-- WRONG: Each call overwrites previous content (bug!)
+raw_html (a_html: READABLE_STRING_GENERAL): like Current
+    do
+        content_text := a_html.to_string_32  -- Overwrites!
+        Result := Current
+    end
+
+-- Usage - only "Third" appears
+l_div.raw_html ("<span>First</span>").do_nothing
+l_div.raw_html ("<span>Second</span>").do_nothing
+l_div.raw_html ("<span>Third</span>").do_nothing
+
+-- CORRECT: Accumulate content
+raw_html (a_html: READABLE_STRING_GENERAL): like Current
+    do
+        content_text.append (a_html.to_string_32)  -- Appends!
+        Result := Current
+    end
+
+-- Now all three spans appear
+```
+
+**Naming Convention:**
+- `set_content`: Replaces/overwrites
+- `add_content`, `append_content`, `raw_html`: Accumulates
+
+**Verified**: 2025-12-03, EiffelStudio 25.02
+
 ### When MI Replaces Other Patterns
 In single-inheritance languages, cross-component communication requires:
 - **Pub-sub/Events**: Components publish events, others subscribe

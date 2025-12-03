@@ -316,6 +316,25 @@ has_origin (a_list: ARRAYED_LIST [STRING]; a_origin: STRING): BOOLEAN
     end
 ```
 
+### HASH_TABLE Iteration: key_for_iteration Inside across Loop
+- **Docs say**: (expected) `across` loop works uniformly for all collections
+- **Reality**: `across` loop creates a separate cursor; internal cursor methods like `key_for_iteration` use a DIFFERENT cursor
+- **Verified**: 2025-12-03, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: key_for_iteration uses internal cursor, not across cursor
+across my_table as ic loop
+    print (my_table.key_for_iteration)  -- PRECONDITION VIOLATION: not_off
+end
+
+-- CORRECT: Use from/until/loop with proper cursor methods
+from my_table.start until my_table.after loop
+    print (my_table.key_for_iteration)  -- OK
+    print (my_table.item_for_iteration) -- OK
+    my_table.forth
+end
+```
+
 ---
 
 ## Agent Limitations
