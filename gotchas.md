@@ -404,6 +404,31 @@ inherit
 
 ---
 
+## HTML Generation
+
+### simple_htmx escape_html Breaks JavaScript in Attributes
+- **Docs say**: Attribute values are properly escaped for HTML
+- **Reality**: `escape_html` escapes `<`, `>`, `&`, `"` which breaks JavaScript in Alpine.js attributes
+- **Verified**: 2025-12-03, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: Arrow functions get escaped
+l_div.x_data ("{ init() { items = [] } }")  -- OK
+l_div.x_init ("$watch('value', v => console.log(v))")  -- BROKEN: => becomes &gt;
+
+-- Also broken:
+l_div.x_show ("count > 5")       -- > becomes &gt;
+l_div.x_if ("a && b")            -- && becomes &amp;&amp;
+
+-- CORRECT: Avoid arrow functions, use alternative patterns
+l_div.x_effect ("console.log(value)")  -- Use x-effect instead of $watch with arrow
+l_div.x_show ("count >= 5")            -- Rewrite comparisons where possible
+```
+- **Workaround**: Avoid arrow functions (`=>`), logical AND (`&&`), and comparisons with `<` or `>` in Alpine attribute values. Use `x_effect` instead of `$watch` with callbacks.
+- **Future fix**: Add `attr_raw` method to simple_htmx for unescaped attribute values.
+
+---
+
 ## Pending Investigation
 
 ### Across Loop Item Access

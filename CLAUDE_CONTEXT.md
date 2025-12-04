@@ -52,17 +52,37 @@ Temporary notes for current work session.
 
 ### Compiler Access
 
-Claude can compile and test Eiffel projects via command line:
+Claude can compile and test Eiffel projects via command line.
 
-```batch
-:: Compile (freeze with C compilation)
-ec.exe -batch -config "project.ecf" -target target_name -c_compile -freeze
+**EiffelStudio ec.exe location** (Git Bash path):
+```
+"/c/Program Files/Eiffel Software/EiffelStudio 25.02 Standard/studio/spec/win64/bin/ec.exe"
+```
 
-:: Run tests
-ec.exe -batch -config "project.ecf" -target target_name -tests
+**CRITICAL**: Always use `-batch` flag for non-interactive compilation.
 
-:: Clean rebuild
-ec.exe -batch -config "project.ecf" -target target_name -c_compile -freeze -clean
+**Environment Variables**: New libraries need their env var set. Use `setx` for Windows:
+```bash
+# Set persistent Windows environment variable
+"/c/Windows/System32/setx.exe" SIMPLE_ALPINE "D:\\prod\\simple_alpine"
+
+# Then export for current session
+export SIMPLE_ALPINE="D:\\prod\\simple_alpine"
+```
+
+**Compile commands** (run from project directory):
+```bash
+# Compile (freeze with C compilation) - ALWAYS use -batch
+"/c/Program Files/Eiffel Software/EiffelStudio 25.02 Standard/studio/spec/win64/bin/ec.exe" \
+  -batch -config project.ecf -target target_name -c_compile
+
+# Clean rebuild (delete EIFGENs first)
+rm -rf EIFGENs && "/c/Program Files/Eiffel Software/EiffelStudio 25.02 Standard/studio/spec/win64/bin/ec.exe" \
+  -batch -config project.ecf -target target_name -c_compile
+
+# Run tests
+"/c/Program Files/Eiffel Software/EiffelStudio 25.02 Standard/studio/spec/win64/bin/ec.exe" \
+  -batch -config project.ecf -target target_name -tests
 ```
 
 ### Assertion Configuration in ECF

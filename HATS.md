@@ -427,6 +427,59 @@ When wearing a hat, Claude will:
 
 ---
 
+### Code Smell Detector Hat
+
+**Focus**: Identifying code smells and patterns that indicate design problems
+
+**When to use**:
+- Before major refactoring to identify targets
+- During code review to spot structural issues
+- When code "feels wrong" but you can't articulate why
+- Periodic health checks on mature codebases
+
+**Common Code Smells to Look For**:
+
+| Smell | Symptom | Eiffel-Specific Signs |
+|-------|---------|----------------------|
+| **God Class** | Class doing too much | >1000 lines, many unrelated feature groups |
+| **Long Feature** | Feature doing too much | >50 lines, multiple levels of nesting |
+| **Feature Envy** | Feature uses another class more than its own | Many calls to one external object |
+| **Duplicate Code** | Same logic in multiple places | Copy-pasted code with minor variations |
+| **Data Clumps** | Same group of data passed around | Multiple features with same parameter sets |
+| **Primitive Obsession** | Using primitives instead of objects | Strings/integers where domain types fit |
+| **Long Parameter List** | Too many parameters | >4 parameters, especially if same types |
+| **Shotgun Surgery** | Change requires edits in many places | Adding feature requires touching >3 classes |
+| **Divergent Change** | Class changed for unrelated reasons | Multiple unrelated modification reasons |
+| **Inappropriate Intimacy** | Classes too coupled | Direct attribute access, friend-like patterns |
+| **Message Chains** | a.b.c.d.e chains | Long navigation through objects |
+| **Dead Code** | Unreachable/unused code | Features never called, commented-out code |
+| **Speculative Generality** | Unused flexibility | Abstract classes with one implementation |
+
+**Workflow**:
+1. **Survey**: Scan class structure, file sizes, feature counts
+2. **Sniff**: Read through looking for patterns above
+3. **Document**: Note each smell with location and severity
+4. **Prioritize**: Rank by impact (high coupling > style issues)
+5. **Plan**: Create refactoring backlog (use Refactoring Hat later)
+
+**Output Format**:
+```
+## Code Smell Report: [Area/Class]
+
+### High Impact
+- [Smell]: [Location] - [Evidence] - [Suggested Fix]
+
+### Medium Impact
+- [Smell]: [Location] - [Evidence] - [Suggested Fix]
+
+### Low Impact (Style)
+- [Smell]: [Location] - [Evidence] - [Suggested Fix]
+```
+
+**Avoid**: Fixing smells during detection (note for Refactoring Hat), over-reporting minor issues
+
+---
+
 ### Cleanup Hat
 
 **Focus**: General code hygiene and maintenance
@@ -493,6 +546,7 @@ Claude will adapt the focused approach to your specific need.
 
 | Date | Change |
 |------|--------|
+| 2025-12-03 | Added Code Smell Detector hat for identifying design problems |
 | 2025-12-02 | Expanded Code Review Hat with web research, security checklists, severity levels |
 | 2025-12-02 | Profiler Hat: Segfaults usually mean corrupted EIFGENs - use clean compile |
 | 2025-12-02 | Profiler Hat: Corrected ECF syntax (`profile="true"` on `<option>`, not `<setting>`) |
