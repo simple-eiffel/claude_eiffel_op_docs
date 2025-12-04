@@ -536,6 +536,113 @@ ensure
 
 ---
 
+### Security Hat
+
+**Focus**: Identifying security vulnerabilities, attack vectors, and hardening code against threats
+
+**When to use**:
+- Before deploying user-facing features
+- After adding any user input handling (forms, URLs, file uploads)
+- Reviewing authentication/authorization code
+- Handling sensitive data (credentials, PII, tokens)
+- Adding external integrations (APIs, email, file system)
+- Periodic security audits of existing code
+
+**Mindset**:
+- Assume ALL input is malicious until validated
+- Think like an attacker - what would I exploit?
+- Trust nothing from the client/user
+- Defense in depth - multiple layers of protection
+- Fail secure - deny by default
+
+**OWASP Top 10 Checklist** (web applications):
+- [ ] **Injection** (SQL, command, XSS, path traversal)
+  - All user input sanitized/escaped for context
+  - Parameterized queries for database
+  - No shell command construction from user data
+- [ ] **Broken Authentication**
+  - Session management secure
+  - Passwords hashed (not encrypted or plain)
+  - Rate limiting on login attempts
+- [ ] **Sensitive Data Exposure**
+  - Credentials not logged or in error messages
+  - Secrets not in source code
+  - HTTPS for sensitive data in transit
+- [ ] **Broken Access Control**
+  - Authorization checked on every request
+  - No direct object references without auth check
+  - Principle of least privilege
+- [ ] **Security Misconfiguration**
+  - Debug mode disabled in production
+  - Default credentials changed
+  - Unnecessary features/ports disabled
+- [ ] **Cross-Site Scripting (XSS)**
+  - All output HTML-encoded
+  - Content-Security-Policy headers
+  - No inline JavaScript from user data
+- [ ] **Insecure Deserialization**
+  - No deserializing untrusted data
+  - Validate object types after deserialization
+- [ ] **Using Components with Known Vulnerabilities**
+  - Dependencies up to date
+  - No deprecated/abandoned libraries
+- [ ] **Insufficient Logging/Monitoring**
+  - Security events logged (login, auth failures)
+  - No sensitive data in logs
+  - Log injection prevented
+
+**Eiffel-Specific Security**:
+- [ ] Void safety enforced (no null pointer attacks)
+- [ ] Contracts validate input at trust boundaries
+- [ ] `require` clauses guard against invalid input
+- [ ] File paths validated (no `..` traversal)
+- [ ] External process execution sanitized
+
+**Web Application Checklist**:
+- [ ] CSRF tokens on state-changing operations
+- [ ] Rate limiting on sensitive endpoints
+- [ ] Input length limits enforced
+- [ ] File upload type/size validation
+- [ ] Cookie security flags (HttpOnly, Secure, SameSite)
+- [ ] Response headers set (X-Frame-Options, CSP, etc.)
+
+**Severity Levels**:
+- **Critical**: Remote code execution, auth bypass, data breach risk
+- **High**: XSS, SQL injection, privilege escalation
+- **Medium**: Information disclosure, weak crypto, missing rate limits
+- **Low**: Missing headers, verbose errors, minor hardening gaps
+
+**Workflow**:
+1. **Map attack surface**: User inputs, external interfaces, data flows
+2. **Review OWASP**: Check each category against the code
+3. **Trace data flow**: Follow user input from entry to storage/output
+4. **Test boundaries**: What happens with malformed/malicious input?
+5. **Report findings**: Categorize by severity with reproduction steps
+
+**Output Format**:
+```
+## Security Review: [Component/Feature]
+
+### Attack Surface
+- [Entry points, user inputs, external interfaces]
+
+### Critical
+- [Vulnerability] - [File:Line] - [Exploit scenario] - [Fix]
+
+### High
+- [Vulnerability] - [File:Line] - [Exploit scenario] - [Fix]
+
+### Medium/Low
+- [Issue] - [Location] - [Recommendation]
+
+### Hardening Recommendations
+- [Defense-in-depth improvements]
+```
+
+**Avoid**: Fixing issues during review (note for later), assuming "users won't do that"
+
+---
+
 ### Cleanup Hat
 
 **Focus**: General code hygiene and maintenance
@@ -602,6 +709,7 @@ Claude will adapt the focused approach to your specific need.
 
 | Date | Change |
 |------|--------|
+| 2025-12-04 | Added Security Hat for vulnerability assessment and security hardening |
 | 2025-12-03 | Added Specification Hat (vibe-contracting) based on Meyer's "probable to provable" |
 | 2025-12-03 | Added Code Smell Detector hat for identifying design problems |
 | 2025-12-02 | Expanded Code Review Hat with web research, security checklists, severity levels |

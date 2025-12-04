@@ -483,6 +483,80 @@ l_div.x_show ("count >= 5")            -- Rewrite comparisons where possible
 
 ---
 
+## Named Tuple Field Access in Across Loops
+
+### Cannot Access Named Tuple Fields via across Cursor
+- **Docs say**: (expected) Tuples with named fields can be accessed via dot notation
+- **Reality**: Named tuple field access (`tuple.field_name`) doesn't work when iterating with `across` loops
+- **Verified**: 2025-12-04, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: VUAR(1) error - wrong number of actual arguments
+pages: ARRAY [TUPLE [title: STRING; url: STRING; description: STRING]]
+...
+across pages as page loop
+    -- Cannot access: page.item.title, page.item.url, page.item.description
+    l_menu.add_item (page.item.title, page.item.url)  -- ERROR!
+end
+
+-- CORRECT: Use parallel arrays instead
+page_titles: ARRAY [STRING]
+    once Result := <<"Home", "About", "Contact">> end
+
+page_urls: ARRAY [STRING]
+    once Result := <<"/", "/about", "/contact">> end
+
+feature -- Generation
+    from i := 1 until i > page_count loop
+        l_menu.add_item (page_titles[i], page_urls[i])
+        i := i + 1
+    end
+```
+- **Alternative**: Use explicit local variables with positional tuple access `page.item.item_1` if needed
+
+---
+
+## Custom Scroll Containers (Alpine.js / JavaScript)
+
+### window.scrollY Doesn't Track Custom Scroll Containers
+- **Docs say**: (Alpine.js/JavaScript general knowledge) `window.scrollY` tracks page scroll position
+- **Reality**: When using CSS `overflow-y: scroll` on a container (e.g., snap scrolling), `window.scrollY` remains 0. Must track container scroll directly.
+- **Verified**: 2025-12-04
+- **Example**:
+```javascript
+// WRONG: Always returns 0 when custom container handles scrolling
+x-init="window.addEventListener('scroll', () => { visible = window.scrollY > 100 })"
+
+// CORRECT: Detect and listen to the scroll container
+x-init="
+  const container = document.querySelector('.snap-container');
+  if (container) {
+    container.addEventListener('scroll', () => { visible = container.scrollTop > 100 });
+  } else {
+    window.addEventListener('scroll', () => { visible = window.scrollY > 100 });
+  }"
+```
+- **Common Containers**: `.snap-container`, modal overlays, custom scroll areas
+
+---
+
+## Citation and URL Verification
+
+### AI-Generated URLs May Be Hallucinated
+- **Reality**: AI models can generate plausible-looking URLs that don't exist. Always verify external links.
+- **Verified**: 2025-12-04
+- **Examples of Hallucinated URLs** (all returned 404):
+  - `uplevelteam.com/blog/copilot-code-quality-study` → Should be `ai-for-developer-productivity`
+  - `veracode.com/state-of-software-security-report` → Should be `blog/ai-generated-code-security-risks/`
+  - `answer.ai/posts/2024-09-10-devin-benchmark.html` → Should be `2025-01-08-devin.html`
+  - `apiiro.com/blog/ai-generated-code-security-risks/` → Should be `4x-velocity-10x-vulnerabilities...`
+- **Defense**:
+  1. Test all external links before committing
+  2. Use WebFetch or curl to verify URLs return 200
+  3. When citing research, verify the actual URL from the source website
+
+---
+
 ## Pending Investigation
 
 ### Across Loop Item Access
