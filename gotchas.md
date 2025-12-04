@@ -404,6 +404,60 @@ inherit
 
 ---
 
+## Contract Completeness (The "True but Incomplete" Problem)
+
+### Contracts Can Be Correct Yet Insufficient
+- **Docs say**: Write postconditions to specify what a feature guarantees
+- **Reality**: A postcondition can be *true* but *incomplete*, passing verification while missing important guarantees
+- **Source**: Meyer, "AI for software engineering: from probable to provable" (CACM 2025)
+- **Verified**: 2025-12-03
+
+**Why This Matters for AI-Generated Code:**
+AI produces "statistically likely" contracts. These are often true but may miss edge cases or fail to capture full behavior. Human review for completeness is essential.
+
+**Example - Incomplete Contract:**
+```eiffel
+add_item (a_item: STRING)
+    require
+      item_not_void: a_item /= Void
+    do
+      items.extend (a_item)
+    ensure
+      has_item: items.has (a_item)  -- TRUE but INCOMPLETE!
+    end
+```
+
+**What's Missing:**
+```eiffel
+    ensure
+      has_item: items.has (a_item)
+      count_increased: items.count = old items.count + 1
+      at_end: items.last ~ a_item
+      others_unchanged: across 1 |..| (old items.count) as i all
+                          items[i] ~ (old items.twin)[i]
+                        end
+```
+
+**Common Incomplete Patterns:**
+
+| Operation | Incomplete | Complete Addition |
+|-----------|------------|-------------------|
+| Add to collection | `has (item)` | `count = old count + 1` |
+| Remove from collection | `not has (item)` | `count = old count - 1` |
+| Set attribute | `attr = value` | `old other_attr = other_attr` (unchanged) |
+| Clear collection | `is_empty` | `count = 0` |
+| Search | `Result /= Void implies has (Result)` | `Result = Void implies not has (target)` |
+
+**Defense Strategy:**
+1. After writing postcondition, ask: "What ELSE is guaranteed?"
+2. For state changes, explicitly state what did NOT change
+3. For counts, always specify old vs new relationship
+4. Use Specification Hat workflow (contracts before code)
+
+**Reference**: See `contract_patterns.md` for systematic patterns
+
+---
+
 ## HTML Generation
 
 ### simple_htmx escape_html Breaks JavaScript in Attributes

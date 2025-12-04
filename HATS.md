@@ -18,6 +18,62 @@ When wearing a hat, Claude will:
 
 ## Available Hats
 
+### Specification Hat (Vibe-Contracting)
+
+**Focus**: Writing formal specifications (contracts) BEFORE implementation
+
+**When to use**:
+- Starting a new feature (write contracts first!)
+- Formalizing requirements into contracts
+- Defining interfaces between components
+- When you want to think about WHAT before HOW
+
+**Principles** (from Meyer's "probable to provable"):
+- Specification IS requirements engineering
+- Contracts define behavior precisely, enabling verification
+- Write contracts first, then implement to satisfy them
+- "Vibe-contracting complements vibe-coding"
+
+**The Key Questions** (ask in order):
+1. **What must be true BEFORE this can be called?** → Preconditions
+2. **What will be true AFTER this completes?** → Postconditions
+3. **What is ALWAYS true about this class?** → Class invariants
+4. **What ELSE is guaranteed?** → Completeness check (critical!)
+
+**Contract Completeness Check**:
+After writing a postcondition, ask: "Is this TRUE but INCOMPLETE?"
+
+```eiffel
+-- INCOMPLETE: Only says item exists
+ensure
+  has_item: items.has (a_item)
+
+-- COMPLETE: Says item added and count changed
+ensure
+  has_item: items.has (a_item)
+  count_increased: items.count = old items.count + 1
+```
+
+**Workflow**:
+1. Write feature signature (name, parameters, return type)
+2. Write `require` clause - what callers must guarantee
+3. Write `ensure` clause - what this feature guarantees
+4. Review: Is postcondition COMPLETE, not just true?
+5. Only THEN write implementation (or hand to Feature Hat)
+
+**Checklist**:
+- [ ] Preconditions capture all caller obligations
+- [ ] Postconditions capture ALL guarantees (completeness!)
+- [ ] Return value postconditions use `Result`
+- [ ] State changes use `old` for comparison
+- [ ] Class invariant updated if new state introduced
+
+**Avoid**: Writing implementation before contracts, assuming contracts are "obvious"
+
+**Reference**: See `verification_process.md` for full iterative workflow
+
+---
+
 ### Contracting Hat (Design-by-Contract)
 
 **Focus**: Adding, reviewing, and strengthening contracts (preconditions, postconditions, invariants)
@@ -546,6 +602,7 @@ Claude will adapt the focused approach to your specific need.
 
 | Date | Change |
 |------|--------|
+| 2025-12-03 | Added Specification Hat (vibe-contracting) based on Meyer's "probable to provable" |
 | 2025-12-03 | Added Code Smell Detector hat for identifying design problems |
 | 2025-12-02 | Expanded Code Review Hat with web research, security checklists, severity levels |
 | 2025-12-02 | Profiler Hat: Segfaults usually mean corrupted EIFGENs - use clean compile |

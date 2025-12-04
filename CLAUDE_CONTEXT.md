@@ -104,6 +104,46 @@ When reviewing or adding contracts, work in this order:
 
 ---
 
+## AI + Verification: From Probable to Provable
+
+Based on Bertrand Meyer's "AI for software engineering: from probable to provable" (CACM 2025):
+
+### The Core Problem
+
+AI produces *statistically likely* code, not *proven correct* code. With N modules at 99.9% correctness each:
+- 1000 modules → 37% system correctness
+- 5000 modules → <1% system correctness
+
+**Solution**: Combine AI generation with formal verification via Design by Contract.
+
+### The Process: Vibe-Contracting + Vibe-Coding
+
+1. **Specification Hat** - Write contracts BEFORE implementation
+2. **Feature Hat** - Implement to satisfy contracts
+3. **Verify** - Compiler (types), Runtime (contracts), [Future: AutoProof (proofs)]
+4. **Iterate** - Fix specification OR implementation on failure
+
+### The "True but Incomplete" Trap
+
+AI-generated contracts are often *true* but miss important guarantees:
+
+```eiffel
+-- INCOMPLETE (AI might generate this)
+ensure
+  has_item: items.has (a_item)
+
+-- COMPLETE (what we need)
+ensure
+  has_item: items.has (a_item)
+  count_increased: items.count = old items.count + 1
+```
+
+**Always ask: "What ELSE is guaranteed?"**
+
+See `verification_process.md` and `contract_patterns.md` for details.
+
+---
+
 ## Working Relationship
 
 1. Claude writes code based on current knowledge + these reference docs
@@ -121,6 +161,8 @@ When reviewing or adding contracts, work in this order:
 | File | Contents |
 |------|----------|
 | `HATS.md` | Focused work modes ("hats") for specific tasks |
+| `verification_process.md` | AI + DBC iterative workflow (Meyer's "probable to provable") |
+| `contract_patterns.md` | Complete postcondition templates for common operations |
 | `gotchas.md` | Generic Eiffel doc-vs-reality conflicts |
 | `sqlite_gotchas.md` | SQLite/database-specific gotchas |
 | `across_loops.md` | Iteration patterns and cursor behavior |
@@ -174,6 +216,8 @@ note
 
 | Date | Change |
 |------|--------|
+| 2025-12-03 | Added Meyer's "probable to provable" framework, verification_process.md, contract_patterns.md |
+| 2025-12-03 | Added Specification Hat and contract completeness guidance |
 | 2025-12-02 | Added simple_ci documentation, middleware patterns, Windows cmd patterns |
 | 2025-12-02 | Genericized - removed project-specific refs, added ROADMAP.md convention |
 | 2025-12-02 | Added profiler.md reference, expanded scoop.md |
