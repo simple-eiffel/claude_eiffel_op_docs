@@ -16,7 +16,7 @@ For a typical web application, this meant including and learning: simple_base64,
 
 ## The Solution: Layered API Facades
 
-We created three facade classes that bundle related functionality through inheritance:
+We created three facade libraries. Each library's ECF references its supplier libraries. The facade classes form an inheritance hierarchy (heir/parent):
 
 ```
 +------------------------------------------+
@@ -25,7 +25,7 @@ We created three facade classes that bundle related functionality through inheri
 |   - Web client, Alpine.js components     |
 +------------------------------------------+
                    |
-                   | inherits from
+                   | APP is heir of SERVICE
                    v
 +------------------------------------------+
 | simple_service_api (Service Layer)       |
@@ -34,7 +34,7 @@ We created three facade classes that bundle related functionality through inheri
 |   - Templates, WebSocket                 |
 +------------------------------------------+
                    |
-                   | inherits from
+                   | SERVICE is heir of FOUNDATION
                    v
 +------------------------------------------+
 | simple_foundation_api (Foundation Layer) |
@@ -48,7 +48,7 @@ We created three facade classes that bundle related functionality through inheri
 
 ### Layer 1: FOUNDATION
 
-The `FOUNDATION` class bundles 9 core utility libraries:
+The `simple_foundation_api` ECF references 9 core utility supplier libraries. The `FOUNDATION` class provides unified access:
 
 ```eiffel
 class FOUNDATION
@@ -99,7 +99,7 @@ end
 
 ### Layer 2: SERVICE
 
-The `SERVICE` class inherits from `FOUNDATION` and adds 7 web service libraries:
+The `simple_service_api` ECF references 7 web service supplier libraries plus `simple_foundation_api`. The `SERVICE` class is heir of `FOUNDATION`:
 
 ```eiffel
 class SERVICE
@@ -141,7 +141,7 @@ end
 
 ### Layer 3: APP
 
-The `APP` class inherits from `SERVICE` and adds 2 application-level libraries:
+The `simple_app_api` ECF references 2 application supplier libraries plus `simple_service_api`. The `APP` class is heir of `SERVICE`:
 
 ```eiffel
 class APP
@@ -262,7 +262,7 @@ end
 | Web services (JWT, email, database, etc.) | `SERVICE` |
 | Full web application (client, UI components) | `APP` |
 
-Each layer includes everything from the layers below it, so `APP` gives you access to all `SERVICE` and `FOUNDATION` features.
+Each heir includes everything from its parents, so `APP` gives you access to all `SERVICE` and `FOUNDATION` features.
 
 ## Design Principles
 
@@ -323,12 +323,12 @@ new_get_request (a_url: STRING): SIMPLE_WEB_REQUEST
 
 ## Benefits
 
-1. **Simplified Dependencies** - One ECF entry instead of 20+
+1. **Simplified Dependencies** - One ECF reference instead of 20+
 2. **Consistent API** - All features follow the same naming conventions
 3. **Discoverability** - IDE auto-completion shows all available features
 4. **Reduced Boilerplate** - No need to create and manage multiple library objects
 5. **Layered Architecture** - Choose the appropriate level for your needs
-6. **Future-Proof** - New libraries can be added to facades without changing client code
+6. **Future-Proof** - New supplier libraries can be added to facades without changing client code
 
 ## Repository Links
 
@@ -339,7 +339,7 @@ new_get_request (a_url: STRING): SIMPLE_WEB_REQUEST
 
 ## Conclusion
 
-The three-tier API facade architecture demonstrates how Eiffel's inheritance model can be leveraged to create clean, unified APIs. By bundling related libraries behind facade classes, we've made it dramatically easier to build Eiffel applications while maintaining the language's strong typing and Design by Contract principles.
+The three-tier API facade architecture demonstrates how Eiffel's class inheritance (heir/parent relationships) can be leveraged to create clean, unified APIs. By bundling related libraries behind facade classes, we've made it dramatically easier to build Eiffel applications while maintaining the language's strong typing and Design by Contract principles.
 
 The approach is particularly powerful for web applications, where the `APP` class provides one-stop access to everything from low-level encoding to high-level UI component generation.
 
