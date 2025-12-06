@@ -2,7 +2,7 @@
 
 ## Introduction
 
-We've developed a three-tier API facade architecture that dramatically simplifies how Eiffel applications consume library functionality. Instead of managing 20+ individual library dependencies, applications can inherit from a single class and gain access to everything they need.
+We've developed a three-tier API facade architecture that dramatically simplifies how Eiffel applications consume library functionality. Instead of managing 20+ individual library dependencies, applications can reference a single facade and gain access to everything they need with clear semantic separation between layers.
 
 ## The Problem
 
@@ -14,44 +14,54 @@ Traditional Eiffel library usage requires:
 
 For a typical web application, this meant including and learning: simple_base64, simple_hash, simple_uuid, simple_json, simple_csv, simple_markdown, simple_validation, simple_process, simple_randomizer, simple_jwt, simple_smtp, simple_sql, simple_cors, simple_rate_limiter, simple_template, simple_websocket, simple_web, simple_alpine, simple_htmx...
 
-## The Solution: Layered API Facades
+## The Solution: Layered API Facades with Composition
 
-We created three facade libraries. Each library's ECF references its supplier libraries. The facade classes form an inheritance hierarchy (heir/parent):
+We created three facade libraries using **composition over inheritance** for maximum semantic clarity:
 
 ```
 +------------------------------------------+
-| simple_app_api (Application Layer)       |
-|   APP class                              |
-|   - Web client, Alpine.js components     |
+| APP_API (Application Layer)              |
+|   - alpine, web_client                   |
+|   - service (composition)                |
+|   - foundation (composition)             |
 +------------------------------------------+
-                   |
-                   | APP is heir of SERVICE
-                   v
-+------------------------------------------+
-| simple_service_api (Service Layer)       |
-|   SERVICE class                          |
-|   - JWT, SMTP, SQL, CORS, Rate Limiting  |
-|   - Templates, WebSocket                 |
-+------------------------------------------+
-                   |
-                   | SERVICE is heir of FOUNDATION
-                   v
-+------------------------------------------+
-| simple_foundation_api (Foundation Layer) |
-|   FOUNDATION class                       |
-|   - Base64, Hashing, UUID, JSON, CSV     |
-|   - Markdown, Validation, Process, Random|
-+------------------------------------------+
+         |                    |
+         v                    v
++------------------+  +------------------+
+| SERVICE_API      |  | FOUNDATION_API   |
+| - jwt, smtp,     |  | - base64, hash,  |
+|   sql, cors,     |  |   uuid, json,    |
+|   templates,     |  |   csv, markdown, |
+|   websocket      |  |   validation,    |
+| - foundation     |  |   process,       |
+|   (composition)  |  |   random         |
++------------------+  +------------------+
+         |
+         v
++------------------+
+| FOUNDATION_API   |
++------------------+
 ```
+
+## Why Composition Over Inheritance?
+
+With inheritance, typing `api.` in the IDE shows ALL features from all layers - confusing!
+
+With composition:
+- `api.` shows only app-level features (alpine, web_client, service, foundation)
+- `api.service.` shows only service-level features (jwt, smtp, cors, etc.)
+- `api.foundation.` shows only foundation-level features (base64, sha256, etc.)
+
+This makes code **self-documenting**. When you see `api.service.new_jwt(...)`, you immediately know it's a service-layer feature. No prefix naming pollution like `svc_new_jwt` or `fnd_base64_encode`.
 
 ## How It Works
 
-### Layer 1: FOUNDATION
+### Layer 1: FOUNDATION_API
 
-The `simple_foundation_api` ECF references 9 core utility supplier libraries. The `FOUNDATION` class provides unified access:
+The `simple_foundation_api` ECF references 9 core utility supplier libraries. The `FOUNDATION_API` class provides unified access:
 
 ```eiffel
-class FOUNDATION
+class FOUNDATION_API
 
 feature -- Base64
     base64_encode (a_string: STRING): STRING
@@ -97,16 +107,12 @@ feature -- Random
 end
 ```
 
-### Layer 2: SERVICE
+### Layer 2: SERVICE_API
 
-The `simple_service_api` ECF references 7 web service supplier libraries plus `simple_foundation_api`. The `SERVICE` class is heir of `FOUNDATION`:
+The `simple_service_api` ECF references 7 web service supplier libraries plus `simple_foundation_api`. The `SERVICE_API` class uses **composition** to access foundation:
 
 ```eiffel
-class SERVICE
-
-inherit
-    FOUNDATION
-        rename make as foundation_make end
+class SERVICE_API
 
 feature -- JWT Authentication
     new_jwt (a_secret: STRING): SIMPLE_JWT
@@ -134,21 +140,23 @@ feature -- Templates
 feature -- WebSocket
     new_ws_handshake: WS_HANDSHAKE
     new_ws_text_frame (a_text: STRING; a_is_final: BOOLEAN): WS_FRAME
-    new_ws_binary_frame (a_data: ARRAY [NATURAL_8]; a_is_final: BOOLEAN): WS_FRAME
+
+feature -- Layer Access
+    foundation: FOUNDATION_API
+        -- Access to foundation layer features ONLY.
+        once
+            create Result.make
+        end
 
 end
 ```
 
-### Layer 3: APP
+### Layer 3: APP_API
 
-The `simple_app_api` ECF references 2 application supplier libraries plus `simple_service_api`. The `APP` class is heir of `SERVICE`:
+The `simple_app_api` ECF references 2 application supplier libraries plus `simple_service_api` and `simple_foundation_api`. The `APP_API` class uses **composition**:
 
 ```eiffel
-class APP
-
-inherit
-    SERVICE
-        rename make as service_make end
+class APP_API
 
 feature -- Web Client
     new_web_client: SIMPLE_WEB_CLIENT
@@ -160,6 +168,19 @@ feature -- Alpine.js Components
     new_alpine_factory: ALPINE_FACTORY
     alpine: ALPINE_FACTORY  -- singleton
 
+feature -- Layer Access
+    service: SERVICE_API
+        -- Access to service layer features ONLY.
+        once
+            create Result.make
+        end
+
+    foundation: FOUNDATION_API
+        -- Access to foundation layer features ONLY.
+        once
+            create Result.make
+        end
+
 end
 ```
 
@@ -169,9 +190,6 @@ end
 
 ```eiffel
 class MY_APPLICATION
-
-inherit
-    ANY
 
 feature {NONE} -- Initialization
 
@@ -217,7 +235,7 @@ end
 <!-- ... and more -->
 ```
 
-### After: Facade Approach
+### After: Facade Approach with Composition
 
 ```eiffel
 class MY_APPLICATION
@@ -226,24 +244,24 @@ feature {NONE} -- Initialization
 
     make
         local
-            app: APP
+            api: APP_API
         do
-            create app.make
+            create api.make
 
-            -- Everything through one object!
-            encoded := app.base64_encode ("data")
-            hash := app.sha256 ("password")
-            uuid := app.new_uuid
-            token := app.create_token ("secret", "user", "app", 3600)
-            db := app.new_memory_database
-            cors := app.new_cors
-
-            -- Alpine.js component
-            div := app.alpine.div
+            -- App-level features
+            div := api.alpine.div
             div.x_data ("{count: 0}")
+            request := api.new_get_request ("https://api.example.com/data")
 
-            -- Web request
-            request := app.new_get_request ("https://api.example.com/data")
+            -- Service-level features (via composition)
+            token := api.service.create_token ("secret", "user", "app", 3600)
+            db := api.service.new_memory_database
+            cors := api.service.new_cors
+
+            -- Foundation-level features (via composition)
+            encoded := api.foundation.base64_encode ("data")
+            hash := api.foundation.sha256 ("password")
+            uuid := api.foundation.new_uuid
         end
 
 end
@@ -254,58 +272,85 @@ end
 <library name="simple_app_api" location="$SIMPLE_APP_API\simple_app_api.ecf"/>
 ```
 
+## Semantic Clarity Through Composition
+
+When reading code, you immediately know which layer a feature belongs to:
+
+```eiffel
+-- Clear: foundation-level operation
+hash := api.foundation.sha256 ("password")
+
+-- Clear: service-level operation
+token := api.service.create_token ("secret", "user", "app", 3600)
+
+-- Clear: app-level operation
+div := api.alpine.div
+```
+
+Compare to the ugly alternative of prefix naming:
+```eiffel
+-- Ugly: Hungarian-style prefixes
+hash := api.fnd_sha256 ("password")       -- What does "fnd" mean?
+token := api.svc_create_token (...)       -- Pollutes feature names
+div := api.app_alpine_div                 -- Gets ridiculous quickly
+```
+
+Composition gives you namespacing through **structure** rather than polluting feature names.
+
 ## Choosing the Right Layer
 
 | If your application needs... | Use this class |
 |------------------------------|----------------|
-| Core utilities only (encoding, hashing, JSON, etc.) | `FOUNDATION` |
-| Web services (JWT, email, database, etc.) | `SERVICE` |
-| Full web application (client, UI components) | `APP` |
-
-Each heir includes everything from its parents, so `APP` gives you access to all `SERVICE` and `FOUNDATION` features.
+| Core utilities only (encoding, hashing, JSON, etc.) | `FOUNDATION_API` |
+| Web services (JWT, email, database, etc.) | `SERVICE_API` |
+| Full web application (client, UI components) | `APP_API` |
 
 ## Design Principles
 
-### 1. Factory Methods Over Direct Construction
+### 1. Composition Over Inheritance
+
+Each API layer is a separate object. When you type `api.`, IntelliSense shows only features appropriate to that level. Access lower layers through explicit accessors (`api.service`, `api.foundation`).
+
+### 2. Factory Methods Over Direct Construction
 
 Instead of exposing raw classes, the facades provide factory methods:
 
 ```eiffel
 -- Good: Factory method
-jwt := service.new_jwt ("secret")
+jwt := api.service.new_jwt ("secret")
 
 -- Avoided: Direct construction requiring knowledge of class internals
 create {SIMPLE_JWT} jwt.make_with_secret ("secret")
 ```
 
-### 2. Convenience Methods for Common Operations
+### 3. Convenience Methods for Common Operations
 
 The facades add convenience methods that combine multiple operations:
 
 ```eiffel
 -- Convenience: One call does it all
-token := service.create_token ("secret", "user@example.com", "my-app", 3600)
+token := api.service.create_token ("secret", "user@example.com", "my-app", 3600)
 
 -- Without convenience method (more verbose)
-jwt := service.new_jwt ("secret")
+jwt := api.service.new_jwt ("secret")
 jwt.set_subject ("user@example.com")
 jwt.set_issuer ("my-app")
 jwt.set_expiration (3600)
 token := jwt.generate
 ```
 
-### 3. Singleton Access for Shared Resources
+### 4. Singleton Access for Shared Resources
 
 Some objects benefit from singleton access:
 
 ```eiffel
 -- Get the same Alpine factory throughout your application
-div := app.alpine.div
-span := app.alpine.span
+div := api.alpine.div
+span := api.alpine.span
 -- Both use the same factory instance
 ```
 
-### 4. Design by Contract Throughout
+### 5. Design by Contract Throughout
 
 All features include proper contracts:
 
@@ -325,10 +370,12 @@ new_get_request (a_url: STRING): SIMPLE_WEB_REQUEST
 
 1. **Simplified Dependencies** - One ECF reference instead of 20+
 2. **Consistent API** - All features follow the same naming conventions
-3. **Discoverability** - IDE auto-completion shows all available features
-4. **Reduced Boilerplate** - No need to create and manage multiple library objects
-5. **Layered Architecture** - Choose the appropriate level for your needs
-6. **Future-Proof** - New supplier libraries can be added to facades without changing client code
+3. **Semantic Clarity** - Composition shows which layer each feature belongs to
+4. **IDE-Friendly** - IntelliSense shows only relevant features for each layer
+5. **Self-Documenting Code** - `api.service.new_jwt` is clearer than `api.new_jwt`
+6. **Reduced Boilerplate** - No need to create and manage multiple library objects
+7. **Layered Architecture** - Choose the appropriate level for your needs
+8. **Future-Proof** - New supplier libraries can be added to facades without changing client code
 
 ## Repository Links
 
@@ -339,9 +386,9 @@ new_get_request (a_url: STRING): SIMPLE_WEB_REQUEST
 
 ## Conclusion
 
-The three-tier API facade architecture demonstrates how Eiffel's class inheritance (heir/parent relationships) can be leveraged to create clean, unified APIs. By bundling related libraries behind facade classes, we've made it dramatically easier to build Eiffel applications while maintaining the language's strong typing and Design by Contract principles.
+The three-tier API facade architecture demonstrates how Eiffel's composition can create clean, unified APIs with clear semantic boundaries. By bundling related libraries behind facade classes and using composition for layer access, we've made it dramatically easier to build Eiffel applications while maintaining the language's strong typing and Design by Contract principles.
 
-The approach is particularly powerful for web applications, where the `APP` class provides one-stop access to everything from low-level encoding to high-level UI component generation.
+The composition approach provides namespacing through structure, making code self-documenting without polluting feature names with layer prefixes.
 
 ---
 
