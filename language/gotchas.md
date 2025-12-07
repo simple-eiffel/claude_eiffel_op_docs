@@ -866,6 +866,32 @@ feature
 
 ---
 
+## DATE Class Features
+
+### DATE.day_of_the_year and yearday Don't Exist
+- **Docs say**: (expected) DATE class should have a day-of-year accessor
+- **Reality**: Neither `day_of_the_year` nor `yearday` exists on DATE. Must calculate manually.
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: These features don't exist
+Result := internal_date.day_of_the_year  -- VEEN error
+Result := internal_date.yearday          -- VEEN error
+
+-- CORRECT: Calculate from January 1
+day_of_year: INTEGER
+    local
+        l_jan1: DATE
+    do
+        create l_jan1.make (year, 1, 1)
+        Result := internal_date.days - l_jan1.days + 1
+    ensure
+        valid_range: Result >= 1 and Result <= 366
+    end
+```
+
+---
+
 ## Pending Investigation
 
 ### Across Loop Item Access
