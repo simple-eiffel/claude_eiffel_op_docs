@@ -618,6 +618,114 @@ x-init="
 
 ---
 
+## Process Launching
+
+### PATH_NAME is Deferred - Cannot Instantiate
+- **Docs say**: PATH_NAME provides path manipulation features
+- **Reality**: PATH_NAME is deferred and cannot be created directly with `create`
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: VGCC(2) error - PATH_NAME is deferred
+l_path_name: PATH_NAME
+create l_path_name.make_from_string (l_path)
+
+-- CORRECT: Use EXECUTION_ENVIRONMENT for current working directory
+l_env: EXECUTION_ENVIRONMENT
+l_cwd: STRING
+create l_env
+l_cwd := l_env.current_working_path.name.to_string_8
+```
+
+### Relative Paths Don't Work for PROCESS_FACTORY Launches
+- **Docs say**: (not documented)
+- **Reality**: When using PROCESS_FACTORY to launch executables, relative paths like "bin/tool.exe" will fail if the working directory changes (e.g., tests run from EIFGENs folder)
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: Relative path works for exists check but not for launch
+l_candidates.extend ("bin/wkhtmltopdf.exe")
+...
+if l_file.exists then
+    executable_path := l_path  -- Relative path fails at launch time
+end
+
+-- CORRECT: Convert to absolute path
+l_env: EXECUTION_ENVIRONMENT
+l_cwd: STRING
+create l_env
+l_cwd := l_env.current_working_path.name.to_string_8
+...
+if l_file.exists then
+    if l_path.starts_with ("C:") or l_path.starts_with ("/") then
+        executable_path := l_path
+    else
+        executable_path := l_cwd + "/" + l_path
+    end
+end
+```
+
+### Environment Variable Returns STRING_32
+- **Docs say**: (not documented clearly)
+- **Reality**: `EXECUTION_ENVIRONMENT.item` returns `READABLE_STRING_32`, not `STRING`. Use `.to_string_8` for conversion.
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: Implicit conversion causes obsolete warning
+l_env: EXECUTION_ENVIRONMENT
+Result: STRING
+if attached l_env.item ("TEMP") as l_temp then
+    Result := l_temp  -- Obsolete as_string_8 warning
+
+-- CORRECT: Explicit conversion
+if attached l_env.item ("TEMP") as l_temp then
+    Result := l_temp.to_string_8
+```
+
+---
+
+## Test App Patterns
+
+### Test Apps Should NOT Inherit from EQA_TEST_SET
+- **Docs say**: (common pattern) Test classes inherit from EQA_TEST_SET
+- **Reality**: Test *app* classes (root class for test target) should NOT inherit from TEST_SET_BASE/EQA_TEST_SET. Only test *set* classes should inherit.
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Reason**: EQA_TEST_SET has attributes (file_system, environment) that need initialization. A standalone test runner doesn't need this inheritance.
+- **Example**:
+```eiffel
+-- WRONG: Test app inherits from test base
+class MY_TEST_APP
+inherit
+    TEST_SET_BASE  -- ERROR: Uninitialized attributes
+create
+    make
+...
+
+-- CORRECT: Separate app from test set
+class MY_TEST_APP
+create
+    make
+feature
+    make
+        local
+            l_tests: MY_TEST_SET
+        do
+            create l_tests
+            run_test (agent l_tests.test_something, "test_something")
+        end
+
+class MY_TEST_SET
+inherit
+    TEST_SET_BASE
+feature
+    test_something
+        do
+            assert ("test", condition)
+        end
+```
+
+---
+
 ## Pending Investigation
 
 ### Across Loop Item Access

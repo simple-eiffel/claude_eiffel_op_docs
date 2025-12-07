@@ -21,6 +21,8 @@ reference_docs/
 ├── claude/                  ← AI workflow patterns
 │   ├── CONTEXT.md           - Session startup context
 │   ├── HATS.md              - Focused work modes
+│   ├── EIFFEL_MENTAL_MODEL.md - Core Eiffel knowledge for AI
+│   ├── compaction_instructions.md - Pre-compaction checkpoint
 │   ├── contract_patterns.md - DBC patterns for AI
 │   └── verification_process.md
 │
@@ -54,11 +56,21 @@ reference_docs/
 2. Check relevant gotchas if working in that area
 3. Ask what to work on
 
-### Ending (important!)
-Before context compression:
-1. Update `RESUME_POINT.md` with current state
-2. Add new learnings to appropriate `language/*.md` file
-3. Leave breadcrumb comments in code for non-obvious fixes
+### Before Compaction (important!)
+
+When you see the context usage warning:
+
+```
+/compact save learnings
+```
+
+This triggers a checkpoint that:
+1. Scans session for learnings (gotchas, patterns, fixes)
+2. Updates relevant `language/*.md` files (non-redundant)
+3. Updates `RESUME_POINT.md` with current state
+4. Confirms ready for compaction
+
+**Todos survive automatically** - no need to capture those.
 
 ---
 
