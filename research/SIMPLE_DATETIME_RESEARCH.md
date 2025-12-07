@@ -392,6 +392,75 @@ feature -- DateTime (Innovative!)
 
 ---
 
+---
+
+## Part 8: Eiffel Ecosystem Date/Time Patterns
+
+### From Eiffel Loop (Finnian Reilly) - Ideas Only (NOT Void-Safe!)
+
+**Location:** https://github.com/finnianr/Eiffel-Loop/tree/master/library/base/text/date-time
+
+**Directory Structure:**
+- `types/` - Core types (EL_DATE, EL_TIME, EL_DATE_TIME, EL_TIME_DURATION, EL_ISO_8601_DATE_TIME)
+- `formatting/` - Output formatting (EL_DATE_TEXT, EL_DATE_TEXT_TEMPLATE, EL_DATE_TIME_CODE_STRING)
+- `helper/` - Utilities (EL_SYSTEM_TIME, EL_TIME_ROUTINES, EL_EXECUTION_TIMER)
+- `parser/` - Parsing support
+- `conversion/` - Format conversion
+- `shared/` - Shared constants
+
+**Key Design Patterns from EL_DATE:**
+1. **Adapter Pattern** - Implements interface (EL_TIME_DATE_I) while extending DATE
+2. **Factory Methods** - Multiple make_* routines for different input sources
+3. **Flyweight Pattern** - `Once_date_time` for shared reusable objects
+4. **Validation** - `valid_string_for_code()` validates before parsing
+
+**Localization Pattern (EL_DATE_TEXT, EL_MONTH_TEXTS, EL_DAY_OF_WEEK_TEXTS):**
+- Separate text classes for localized names
+- Deferred locale interface (EL_DEFERRED_LOCALE_I)
+- Default to English (EL_ENGLISH_DATE_TEXT)
+
+### From Pylon Library (Portable Foundation)
+
+**P_DATE / P_TIME / P_DATE_TIME patterns:**
+- `is_valid` query for validation
+- Multiple output formats: `to_iso`, `to_iso_long`, `to_european`, `to_american`, `to_rfc`
+- `hour_12`, `is_am`, `is_pm` for 12-hour time
+- `timezone_bias` in minutes for timezone offset
+- Composition: P_DATE_TIME contains P_DATE and P_TIME (not inheritance)
+
+### From ISO8601 Library (Thomas Beale) - Void-Safe!
+
+**Repository:** https://github.com/eiffelhub/iso8601
+
+**Key Patterns:**
+1. **Validation before conversion** - `valid_iso8601_date()` before `iso8601_string_to_date()`
+2. **Cached parser** - Avoid redundant parsing when validate + convert
+3. **Central routines class** - ISO8601_ROUTINES as facade
+4. **Bidirectional conversion** - String ↔ ISO8601 object ↔ Eiffel DATE/TIME
+
+---
+
+## Attribution Requirements
+
+When implementing simple_datetime, give credit in class notes:
+
+```eiffel
+note
+    description: "[
+        Simple DateTime - High-level date/time API for Eiffel.
+
+        Design influenced by:
+        - Eiffel Loop (Finnian Reilly) - Localization patterns, multiple format outputs
+        - Pylon library - Composition over inheritance, format variety (iso, rfc, etc.)
+        - ISO8601 library (Thomas Beale) - Validation before conversion pattern
+        - Gobo Time library (Eric Bezault) - DT_DATE epoch-based calculations
+        - Luxon/date-fns (JavaScript) - Fluent API, immutability
+        - Pendulum (Python) - Timezone-aware by default, humanize output
+        ]"
+```
+
+---
+
 ## References
 
 ### Design Patterns

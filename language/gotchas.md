@@ -266,6 +266,27 @@ Result := l_param.string_representation.to_string_32
 ```
 - **AI Note**: This is a common AI code generation mistake - generating plausible-looking but non-unique UUIDs. Always generate fresh UUIDs for each new ECF file.
 
+### Attribution for Reused Design Ideas
+- **Rule**: When borrowing design patterns or API ideas from other Eiffel libraries (void-safe or not), provide attribution
+- **Where to Attribute**:
+  - In the class note section
+  - In README.md
+  - In docs/index.html
+- **Format**: Include library name, author if known, and what was borrowed
+- **Example**:
+```eiffel
+note
+    description: "[
+        Simple DateTime - High-level date/time API.
+
+        Design influenced by:
+        - Eiffel Loop (Finnian Reilly) - EL_DATE_TEXT localization patterns
+        - Pylon library - multiple format output (to_iso, to_european, to_rfc)
+        - ISO8601 library (Thomas Beale) - validation before conversion pattern
+        ]"
+```
+- **Why**: Respects original authors, helps others find source material, documents design decisions
+
 ---
 
 ## Test Framework
