@@ -244,6 +244,28 @@ Result := l_param.string_representation.to_string_32
 [System.Environment]::SetEnvironmentVariable('FRAMEWORK', 'D:\prod\framework', 'User')
 ```
 
+### ECF UUID Must Be Unique - Never Use Fake/Sequential UUIDs
+- **Docs say**: ECF system element has uuid attribute
+- **Reality**: EiffelStudio uses UUIDs to identify libraries. If two libraries share the same UUID (or similar fake UUIDs), EiffelStudio gets confused and loads the wrong classes from the wrong library!
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Symptom**: Library shows wrong classes (e.g., validation classes when you expect XML classes) when used as a dependency
+- **Example**:
+```xml
+<!-- WRONG: Fake/sequential UUID that will collide with other libraries -->
+<system ... uuid="A1B2C3D4-E5F6-7890-ABCD-EF1234567890" ...>
+
+<!-- WRONG: Incrementing last digit doesn't help if base pattern is reused -->
+<system ... uuid="A1B2C3D4-E5F6-7890-ABCD-EF1234567891" ...>
+
+<!-- CORRECT: Generate a real unique UUID -->
+<system ... uuid="f8a3b1c2-4d5e-6f7a-8b9c-0d1e2f3a4b5c" ...>
+```
+- **Fix**: Generate a real UUID using PowerShell:
+```powershell
+[guid]::NewGuid().ToString()
+```
+- **AI Note**: This is a common AI code generation mistake - generating plausible-looking but non-unique UUIDs. Always generate fresh UUIDs for each new ECF file.
+
 ---
 
 ## Test Framework
@@ -264,6 +286,20 @@ class MY_TEST
 inherit
     TEST_SET_BASE
 ```
+
+### Always Use Test Target for Compiling and Running Tests
+- **Docs say**: (operational knowledge)
+- **Reality**: Always compile using the test target (e.g., `my_project_tests`) for both compilation AND test execution. This ensures tests are included in the build.
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```batch
+:: CORRECT: Compile test target
+ec.exe -batch -config my_project.ecf -target my_project_tests -c_compile
+
+:: WRONG: Compiling main target then trying to run tests
+ec.exe -batch -config my_project.ecf -target my_project -c_compile
+```
+- **Benefit**: Saves time and tokens by not having to compile twice
 
 ### ECF Test Target Configuration
 - **Docs say**: (limited documentation on AutoTest configuration)
@@ -721,6 +757,89 @@ feature
     test_something
         do
             assert ("test", condition)
+        end
+```
+
+---
+
+## Gobo Library Issues
+
+### DS_LIST Requires Cursor-Based Iteration
+- **Docs say**: (expected) All list types support `across` iteration
+- **Reality**: Gobo's DS_LIST and DS_LINEAR_CURSOR don't support `across` syntax - must use cursor-based from/until/loop
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: across doesn't work with DS_LIST
+l_attrs: DS_LIST [XM_ATTRIBUTE]
+across l_attrs as ic loop ... end  -- Compilation error
+
+-- CORRECT: Use cursor-based iteration
+l_cursor: DS_LINEAR_CURSOR [XM_ATTRIBUTE]
+l_cursor := l_attrs.new_cursor
+from l_cursor.start until l_cursor.after loop
+    print (l_cursor.item.name)
+    l_cursor.forth
+end
+```
+
+### HASH_TABLE across Key Access with @
+- **Docs say**: (not clearly documented)
+- **Reality**: In `across table as ic` loop, `ic` gives the VALUE directly. For the KEY, use `@ic.key`
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: ic.key doesn't exist
+l_table: HASH_TABLE [STRING, STRING]
+across l_table as ic loop
+    print (ic.key)   -- ERROR: VEEN - unknown identifier 'key'
+    print (ic.item)  -- ERROR: trying to call 'item' on STRING
+end
+
+-- CORRECT: Use @ prefix for key access
+across l_table as ic loop
+    print (@ic.key)  -- The key (STRING)
+    print (ic)       -- The value (STRING) - ic IS the value
+end
+```
+
+### ARRAYED_LIST across Gives Item Directly
+- **Docs say**: (expected) across cursor has .item accessor
+- **Reality**: For ARRAYED_LIST in `across list as ic`, `ic` IS the item directly, not `ic.item`
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+-- WRONG: ic.item on ARRAYED_LIST
+l_items: ARRAYED_LIST [XM_CHARACTER_DATA]
+across l_items as ic loop
+    xm_element.delete (ic.item)  -- ERROR: ic IS the item, not ic.item
+end
+
+-- CORRECT: ic is the item
+across l_items as ic loop
+    xm_element.delete (ic)  -- ic IS the XM_CHARACTER_DATA directly
+end
+```
+
+### VOIT(2) - Loop Variable Conflicts with Feature Name
+- **Docs say**: Loop variables follow normal identifier rules
+- **Reality**: Loop variable in `across` cannot have the same name as a feature in the class (VOIT(2) = Variable Of ITeration)
+- **Verified**: 2025-12-07, EiffelStudio 25.02
+- **Example**:
+```eiffel
+class MY_CLASS
+feature
+    attr (a_name: STRING): STRING  -- Feature named 'attr'
+
+    element_to_string: STRING
+        local
+            l_attrs: HASH_TABLE [STRING, STRING]
+        do
+            -- WRONG: 'attr' conflicts with feature name
+            across l_attrs as attr loop ... end  -- ERROR: VOIT(2)
+
+            -- CORRECT: Use different name
+            across l_attrs as ic_attr loop ... end  -- OK
         end
 ```
 
