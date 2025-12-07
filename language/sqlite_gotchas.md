@@ -155,3 +155,49 @@ void my_function(EIF_NATURAL value) { ... }  // Error: EIF_NATURAL undeclared
 #endif
 void my_function(EIF_NATURAL value) { ... }  // Now works with both runtimes
 ```
+
+---
+
+## Threading Issues
+
+### SQLite Connections Are Thread-Bound (EiffelWeb Thread Pool)
+- **Docs say**: (assumed) SQLite connections work across threads
+- **Reality**: SQLite connections opened on Thread A cannot be used from Thread B. EiffelWeb uses a thread pool (`POOLED_THREAD`) for request handling, so connections opened on main thread fail when accessed from worker threads.
+- **Verified**: 2025-12-07, EiffelStudio 25.02, EiffelWeb/WSF
+- **Symptoms**: Intermittent `PRECONDITION_VIOLATION` on `a_db_is_accessible` in `SQLITE_MODIFY_STATEMENT.make`. The check passes early (same thread) then fails once thread pool handles requests.
+- **Diagnosis**: Call stack shows `POOLED_THREAD` - dead giveaway of cross-thread access.
+- **Example**:
+```eiffel
+-- WRONG: Shared connection created on main thread
+class MY_MIDDLEWARE
+feature
+    make (a_db: MY_DATABASE)
+        do
+            database := a_db  -- Created on main thread!
+        end
+
+    process (request, response, next)
+        do
+            database.insert (...)  -- Called from worker thread - FAILS!
+        end
+end
+
+-- CORRECT: Per-request connection
+class MY_MIDDLEWARE
+feature
+    make (a_db_path: STRING)
+        do
+            db_path := a_db_path
+        end
+
+    process (request, response, next)
+        local
+            l_db: SIMPLE_SQL_DATABASE
+        do
+            create l_db.make (db_path)  -- Fresh connection on THIS thread
+            l_db.execute_with_args ("INSERT ...", <<...>>)
+            l_db.close
+        end
+end
+```
+- **Note**: SQLite file opens are sub-millisecond. Per-request connections is the standard pattern (Django, Rails, etc.).

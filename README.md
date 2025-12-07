@@ -1,93 +1,83 @@
-# Eiffel Reference Documentation
+# Eiffel + AI Reference Documentation
 
-Reference documentation for Eiffel development, Claude AI workflows, and strategic planning.
-
----
-
-## Quick Start
-
-**Starting a new Claude session?** Read these first:
-1. [`claude/CONTEXT.md`](claude/CONTEXT.md) - Session startup protocol
-2. Look for `ROADMAP.md` in the project you're working on
-3. Ask "What would you like to work on this session?"
+**Start here:** [`RESUME_POINT.md`](RESUME_POINT.md) - Current state and next steps
 
 ---
 
-## Folder Structure
+## Structure
 
-### [`claude/`](claude/) - AI Session Management
-
-Documents for Claude AI workflow and collaboration patterns.
-
-| File | Purpose |
-|------|---------|
-| [CONTEXT.md](claude/CONTEXT.md) | **Read first** - Session startup, general Eiffel knowledge |
-| [HATS.md](claude/HATS.md) | Focused work modes (refactoring, contracting, testing, etc.) |
-| [contract_patterns.md](claude/contract_patterns.md) | Design by Contract patterns for AI-assisted development |
-| [verification_process.md](claude/verification_process.md) | Code verification workflow |
-| [mentoring_mode.md](claude/mentoring_mode.md) | Teaching and explanation mode |
-
-### [`language/`](language/) - Eiffel Language Reference
-
-Practical knowledge about Eiffel that supplements official documentation.
-
-| File | Purpose |
-|------|---------|
-| [gotchas.md](language/gotchas.md) | "Docs say X but reality is Y" corrections |
-| [patterns.md](language/patterns.md) | Verified working code patterns |
-| [across_loops.md](language/across_loops.md) | Iteration constructs, cursors, `.item` behavior |
-| [scoop.md](language/scoop.md) | SCOOP concurrency model |
-| [profiler.md](language/profiler.md) | EiffelStudio profiler usage |
-| [sqlite_gotchas.md](language/sqlite_gotchas.md) | SQLite/database-specific issues |
-
-### [`strategy/`](strategy/) - Business & Strategy
-
-Market analysis, competitive positioning, and development roadmaps.
-
-| File | Purpose |
-|------|---------|
-| [LIBRARY_ROADMAP.md](strategy/LIBRARY_ROADMAP.md) | **NEW** - Gap analysis vs. modern ecosystem |
-| [COMPETITIVE_ANALYSIS.md](strategy/COMPETITIVE_ANALYSIS.md) | Market positioning analysis |
-| [AI_PRODUCTIVITY.md](strategy/AI_PRODUCTIVITY.md) | AI productivity research and data |
-| [REFACTORING_CASE_STUDY.md](strategy/REFACTORING_CASE_STUDY.md) | Real-world refactoring case study |
-
-### [`archive/`](archive/) - Completed Project Plans
-
-Historical project planning documents (reference only).
-
-| File | Project |
-|------|---------|
-| simple_showcase_content.md | Content blueprint for showcase site |
-| simple_showcase_plan.md | Initial project plan |
-| simple_alpine_plan.md | Alpine.js wrapper project |
-| simple_htmx_creation.md | HTMX wrapper project |
-| simple_sql_*.md | SQL library planning |
-| current_work.md | Historical work tracking |
+```
+reference_docs/
+├── RESUME_POINT.md          ← Start here (current state, next steps)
+├── README.md                ← You are here
+│
+├── language/                ← Eiffel language knowledge
+│   ├── gotchas.md           - Doc vs reality corrections
+│   ├── sqlite_gotchas.md    - SQLite/DB specific issues
+│   ├── patterns.md          - Verified working code
+│   ├── across_loops.md      - Iteration constructs
+│   └── scoop.md             - Concurrency (SCOOP)
+│
+├── claude/                  ← AI workflow patterns
+│   ├── CONTEXT.md           - Session startup context
+│   ├── HATS.md              - Focused work modes
+│   ├── contract_patterns.md - DBC patterns for AI
+│   └── verification_process.md
+│
+├── strategy/                ← Business/roadmaps
+│   ├── SIMPLIFICATION_ROADMAP.md - Future simple_* libraries
+│   ├── COMPETITIVE_ANALYSIS.md   - Market positioning
+│   └── AI_PRODUCTIVITY.md        - Productivity data
+│
+├── research/                ← Planning docs (historical)
+└── archive/                 ← Completed project plans
+```
 
 ---
 
-## Project Convention
+## Quick Reference
 
-Each Eiffel project should have a `ROADMAP.md` in its root containing:
-- Project overview and current status
-- Dependencies and build commands
-- Current focus and backlog
-- Session notes
-
-This keeps reference docs generic while project details live with each project.
-
----
-
-## Contributing
-
-When adding new learnings:
-1. Add to the appropriate folder/file
-2. Include verification date and EiffelStudio version
-3. Provide working code examples
-4. Follow existing format in each file
+| Need | File |
+|------|------|
+| Resume work | `RESUME_POINT.md` |
+| Eiffel gotchas | `language/gotchas.md` |
+| SQLite issues | `language/sqlite_gotchas.md` |
+| Code patterns | `language/patterns.md` |
+| Future libraries | `strategy/SIMPLIFICATION_ROADMAP.md` |
 
 ---
 
-## Last Updated
+## Session Workflow
 
-2025-12-05 - Reorganized into folders: claude/, language/, strategy/, archive/
+### Starting
+1. Read `RESUME_POINT.md`
+2. Check relevant gotchas if working in that area
+3. Ask what to work on
+
+### Ending (important!)
+Before context compression:
+1. Update `RESUME_POINT.md` with current state
+2. Add new learnings to appropriate `language/*.md` file
+3. Leave breadcrumb comments in code for non-obvious fixes
+
+---
+
+## Adding Knowledge
+
+When you learn something the hard way:
+1. **Gotcha?** → Add to `language/gotchas.md` or `language/sqlite_gotchas.md`
+2. **Pattern?** → Add to `language/patterns.md`
+3. **Bug fix?** → Leave comment in code + add to gotchas if non-obvious
+
+Format:
+```markdown
+### Short Title
+- **Docs say**: What you expected
+- **Reality**: What actually works
+- **Verified**: Date, EiffelStudio version
+- **Example**: Working code
+```
+
+---
+
+*Last updated: 2025-12-07*
