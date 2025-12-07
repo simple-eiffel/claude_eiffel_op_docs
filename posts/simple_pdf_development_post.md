@@ -255,7 +255,46 @@ simple_pdf/
 
 ---
 
-## Usage in Your Project
+## API Integration
+
+`simple_pdf` is now integrated into the `simple_*` API hierarchy:
+
+```
+FOUNDATION_API (core utilities: json, uuid, base64, validation, etc.)
+       ↑
+SERVICE_API (services: jwt, smtp, sql, cors, cache, websocket, pdf)
+       ↑
+APP_API (full application stack)
+```
+
+### Using via SERVICE_API or APP_API
+
+If your project already uses `simple_service_api` or `simple_app_api`, you automatically have access to `simple_pdf` - no additional ECF entry needed:
+
+```eiffel
+class MY_WEB_SERVICE
+
+inherit
+    SERVICE_API  -- or APP_API
+
+feature
+    generate_report
+        local
+            pdf: SIMPLE_PDF
+            doc: SIMPLE_PDF_DOCUMENT
+        do
+            create pdf.make
+            doc := pdf.from_html (build_report_html)
+            if doc.is_valid then
+                doc.save_to_file ("report.pdf")
+            end
+        end
+end
+```
+
+### Using Standalone
+
+For projects that only need PDF functionality:
 
 1. Clone or reference the repository
 2. Set environment variable: `SIMPLE_PDF=D:\path\to\simple_pdf`
@@ -286,7 +325,7 @@ The key was maintaining Eiffel's design principles while leveraging AI for:
 - Discovering platform-specific behaviors
 - Test infrastructure patterns
 
-The library is now part of the `simple_*` ecosystem and will be integrated into SERVICE_API for broader use.
+The library is now part of the `simple_*` ecosystem and has been integrated into SERVICE_API (and by extension, APP_API) for immediate use in any application.
 
 **Repository:** https://github.com/ljr1981/simple_pdf
 
