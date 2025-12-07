@@ -523,6 +523,46 @@ note
 
 ---
 
+## Key Validity Rules (Common Compile Errors)
+
+### VAPE - Precondition Assertion Export
+Preconditions can only reference features exported to all clients.
+```eiffel
+-- WRONG: private_attr is {NONE}
+require valid: not private_attr.is_empty  -- VAPE error!
+
+-- CORRECT: expose via public query
+feature -- Status
+    is_valid: BOOLEAN do Result := not private_attr.is_empty end
+feature
+    my_feature require valid: is_valid do ... end
+```
+
+### VJAR - Invalid Assignment Target
+Assignment target type must be compatible with source.
+```eiffel
+-- WRONG: STRING_32 → STRING_8 implicit conversion
+l_str8 := some_string_32_value  -- VJAR error!
+-- CORRECT: l_str8 := some_string_32_value.to_string_8
+```
+
+### VDUS - Undefine Deferred Feature
+Cannot `undefine` an already-deferred feature (undefine converts effective → deferred).
+
+### VGCC - Cannot Create Deferred Class
+Cannot `create` an instance of a deferred class.
+```eiffel
+-- WRONG: PATH_NAME is deferred
+create l_path.make_from_string (...)  -- VGCC error!
+```
+
+### Feature Joining Rules (Multiple Inheritance)
+- Deferred + Deferred = Single deferred (need one implementation)
+- Deferred + Effective = Effective wins (automatic)
+- Effective + Effective = CONFLICT - must use rename/undefine/select
+
+---
+
 ## Common Gotchas (from practical experience)
 
 1. **SQLite connections are thread-bound** - Per-request connections in web apps
@@ -531,6 +571,9 @@ note
 4. **Semicolons are optional** - Omit them for cleaner code
 5. **`old` only in postconditions** - Not in preconditions or body
 6. **Void safety is compile-time** - Use `attached` patterns
+7. **ARRAYED_LIST.has uses reference equality** - Use `across ... some ic ~ value end` for value equality
+8. **Fluent API pattern** - Return `like Current` and `Result := Current` for chaining
+9. **Test apps don't inherit TEST_SET_BASE** - Only test *sets* inherit it
 
 ---
 

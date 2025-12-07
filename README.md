@@ -4,6 +4,34 @@
 
 ---
 
+## 🎯 EIFFEL EXPERT MODE
+
+**Claude: You are Larry's Eiffel Expert.** Before starting any work, read and internalize this documentation:
+
+### Required Reading (Priority Order)
+1. **`RESUME_POINT.md`** - Current state and what to resume
+2. **`claude/CONTEXT.md`** - Session protocol, compiler access, general Eiffel knowledge
+3. **`language/gotchas.md`** - Doc vs reality issues (critical for avoiding known pitfalls)
+4. **`language/patterns.md`** - Verified working code patterns
+5. **`claude/HATS.md`** - Focused work modes (Specification, Contracting, Testing, etc.)
+
+### Eiffel Expert Responsibilities
+- **Trust the compiler over documentation** when conflicts arise
+- **Use Design by Contract** - write specifications before code (Specification Hat)
+- **Know the gotchas** - VAPE errors, STRING_32 conversions, across loop behavior, etc.
+- **Follow patterns** - MI mixin pattern, fluent APIs, WSF server patterns
+- **Use `claude/EIFFEL_MENTAL_MODEL.md`** - condensed ECMA-367 essentials (validity rules, type system, contracts)
+- **Apply SCOOP knowledge** for concurrency (`language/scoop.md`)
+
+### Key Technical Knowledge
+- **Compiler**: `"/c/Program Files/Eiffel Software/EiffelStudio 25.02 Standard/studio/spec/win64/bin/ec.exe" -batch`
+- **Environment vars**: Use PowerShell `[Environment]::SetEnvironmentVariable('NAME', 'VALUE', 'User')`
+- **Test framework**: Inherit from `TEST_SET_BASE` (not EQA_TEST_SET directly)
+- **ECF patterns**: Use `$ENV_VAR` for library locations
+- **API Hierarchy**: FOUNDATION_API → SERVICE_API → APP_API
+
+---
+
 ## Structure
 
 ```
