@@ -55,16 +55,24 @@ end
 
 ---
 
-## Phase 2: SCOOP Variants
+## Phase 2: SCOOP Support
 
-### Step 2.1: Create Multi-Variant ECFs
-Follow EWF pattern - ship 3 variants minimum:
+### Step 2.1: ECF Capability Configuration
+All libraries are void-safe by default. Use capability settings to declare SCOOP support:
 
+```xml
+<capability>
+    <concurrency support="scoop" use="thread"/>
+    <void_safety support="all"/>
+</capability>
 ```
-simple_json.ecf           -- Default (thread)
-simple_json-safe.ecf      -- Void-safe only
-simple_json-scoop.ecf     -- SCOOP + void-safe
-```
+
+This declares:
+- `support="scoop"` - Library is SCOOP-compatible
+- `use="thread"` - Default to thread concurrency (consumer can override)
+- `void_safety support="all"` - Void-safe (non-negotiable baseline)
+
+**Note:** The `-safe.ecf` variant pattern is outdated. Void-safety is expected, not optional.
 
 ### Step 2.2: Priority Libraries for SCOOP
 1. simple_json (most used)
