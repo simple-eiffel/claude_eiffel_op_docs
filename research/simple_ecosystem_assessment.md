@@ -104,7 +104,7 @@ All 51 repositories include:
 |--------|----------|--------|
 | simple_setup CLI | Windows | Functional |
 | INNO installer | Windows | Functional |
-| Linux/Mac scripts | - | Not implemented |
+| Linux/Mac scripts | - | Planned (code already cross-platform) |
 
 ### Documentation
 
@@ -164,7 +164,7 @@ All 51 repositories include:
 
 1. **8 placeholder repositories** - Repos exist without implementation. At the measured production rate (4,911 LOC/day), these represent approximately 1-2 weeks of development effort to complete.
 
-2. **Windows-only distribution** - No Linux/Mac installation scripts. Cross-platform support requires shell scripts or platform-specific installers.
+2. **Distribution currently Windows-focused** - Installation scripts and INNO installer target Windows. The Eiffel language and EiffelStudio toolchain are natively cross-platform (Windows, Linux, macOS); all simple_* code compiles unchanged on any supported platform. Cross-platform distribution requires only platform-specific installation scripts, not code changes.
 
 3. **No CI/CD** - Manual testing only. GitHub Actions would automate compilation and test verification on each commit.
 
@@ -189,7 +189,7 @@ All 51 repositories include:
 ### Current Limitations
 - 8 of 51 repositories (16%) are empty placeholders - at the measured 4,911 LOC/day production rate, this represents approximately 1-2 weeks of development to complete
 - No automated CI/CD pipeline
-- No cross-platform distribution (Windows only)
+- Distribution scripts currently Windows-focused (code is cross-platform)
 - Complete API documentation (~55,000 HTML files across 43 libraries)
 - Single maintainer (mitigated by MIT license and public GitHub availability)
 
