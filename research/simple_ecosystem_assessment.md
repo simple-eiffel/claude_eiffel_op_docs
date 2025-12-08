@@ -55,8 +55,7 @@ The simple_* collection is a **modern usability layer** that genuinely improves 
 | Installation | `pip install x` | `simple_setup install x` or INNO bundle |
 | Dependency resolution | Automatic | Manual ECF editing |
 | Version management | Built-in | Git tags |
-| Time to hello world | 30 seconds | 10 minutes (with installer) |
-| Documentation | Rich, searchable | Basic READMEs + HTML docs |
+| Documentation | Rich, searchable | READMEs + HTML docs |
 | Community | Millions | Dozens |
 
 **Verdict:** Different universes. Python is general-purpose dominant; we're a niche DbC tool.
