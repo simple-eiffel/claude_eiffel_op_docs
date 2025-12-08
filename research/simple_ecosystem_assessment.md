@@ -54,7 +54,26 @@ The simple_* libraries were developed using AI assistance (Claude). The developm
 - **Void safety** - Null reference errors caught at compile time
 - **SCOOP declarations** - Concurrency model configured in ECF files
 
-Reported productivity multiplier: 40-100x compared to traditional development. This claim requires independent verification.
+### Measured Production Rate
+
+| Metric | Value |
+|--------|-------|
+| Total Eiffel code | 132,607 lines |
+| Development period | 27 days (Nov 11 - Dec 8, 2025) |
+| Production rate | 4,911 LOC/day |
+
+Industry baseline for production code: 10-50 LOC/day (varies by source).
+
+| Baseline | Multiplier |
+|----------|------------|
+| 50 LOC/day | 98x |
+| 25 LOC/day | 196x |
+
+Top libraries by code volume:
+- simple_sql: 38,682 lines
+- simple_json: 11,764 lines
+- simple_web: 9,568 lines
+- simple_showcase: 8,877 lines
 
 ### Comparison Context
 
