@@ -257,4 +257,114 @@ DBC + void safety + SCOOP could be that reason, but only if they work together i
 
 ---
 
+## What It Would Take to Be Competitive
+
+### Phase 1: Remove the EWF Dependency (Critical)
+
+**Problem:** simple_http and simple_web wrap ISE's EWF, which is:
+- Not SCOOP-compatible (blocks Eiffel's main concurrency advantage)
+- Poorly maintained
+- A black box we don't control
+
+**Solution:** Build native HTTP from scratch using inline C for Win32/POSIX sockets.
+
+**Deliverables:**
+1. `SIMPLE_SOCKET` - TCP socket wrapper (inline C, no .obj files)
+2. `SIMPLE_HTTP_PARSER` - HTTP/1.1 request/response parsing
+3. `SIMPLE_HTTP_SERVER` - Listen, accept, route, respond
+4. `SIMPLE_HTTP_CLIENT` - GET/POST/PUT/DELETE with headers
+5. SCOOP-compatible design throughout
+
+**Effort:** Significant. This is building a web framework from scratch. But it's the single biggest blocker to Eiffel being taken seriously for web development.
+
+**Benchmark:** Must demonstrate comparable performance to Go's net/http or Node's http module. No benchmarks = no credibility.
+
+---
+
+### Phase 2: LSP Implementation (Critical for Adoption)
+
+**Problem:** No developer will adopt a language they can't use in VSCode/Cursor/their preferred editor. EiffelStudio-only is a non-starter for most teams.
+
+**Solution:** Implement Language Server Protocol for Eiffel.
+
+**Minimum viable LSP:**
+1. Go to definition
+2. Find references
+3. Hover documentation
+4. Diagnostic errors (compile errors inline)
+5. Code completion
+
+**Reality check:** This is a massive undertaking. It requires deep integration with the Eiffel compiler or reimplementing significant parsing/analysis. This is likely beyond what one developer + AI can do without ISE involvement.
+
+**Alternative:** Lobby ISE to prioritize this, or accept that Eiffel will remain niche.
+
+---
+
+### Phase 3: Prove It Works (Credibility)
+
+**Problem:** No production deployments with public metrics. "Trust us, it's fast" isn't evidence.
+
+**Solution:** Build and deploy real applications with published metrics.
+
+**Needed:**
+1. **Benchmarks** - simple_json vs serde_json vs encoding/json. simple_web vs Gin vs Actix. Published, reproducible, honest.
+2. **Production case study** - A real application (not a demo) running in production with uptime, latency, and throughput data.
+3. **Load testing results** - How many requests/second? How does it scale? What breaks first?
+
+**Without this:** Every claim is just marketing.
+
+---
+
+### Phase 4: Fill Remaining Gaps
+
+**Database:**
+- Connection pooling for simple_sql
+- Migration support
+- Query builder improvements
+
+**Async I/O:**
+- Non-blocking file operations
+- Async HTTP client
+- SCOOP-native async patterns
+
+**Observability:**
+- Metrics export (Prometheus format)
+- Distributed tracing
+- Structured logging improvements
+
+---
+
+### Phase 5: Community Building (Long-term)
+
+**This can't be manufactured, but it can be seeded:**
+
+1. **Tutorial content** - YouTube videos, blog posts, "Getting Started" guides
+2. **Example applications** - Not toy demos, real patterns people can copy
+3. **Stack Overflow presence** - Answer Eiffel questions (there are few, but they exist)
+4. **Conference talks** - Present the AI+DBC workflow at programming conferences
+5. **Open contribution** - Make it easy for others to contribute to simple_*
+
+---
+
+### Realistic Assessment
+
+| Phase | Feasibility | Impact |
+|-------|-------------|--------|
+| 1. EWF Replacement | Doable (hard) | High - unlocks SCOOP for web |
+| 2. LSP | Very hard without ISE | Critical for adoption |
+| 3. Prove It Works | Doable | High - credibility |
+| 4. Fill Gaps | Doable | Medium - completeness |
+| 5. Community | Slow, organic | Long-term sustainability |
+
+**Honest timeline:**
+- Phase 1 alone is months of focused work
+- Phase 2 may never happen without ISE commitment
+- Phases 3-5 are ongoing, not "done"
+
+**The uncomfortable truth:** Even with all phases complete, Eiffel would still be competing against languages with 10-20 years of ecosystem maturity, millions of developers, and massive corporate backing. The question isn't "can Eiffel be competitive?" but "is the DBC+void safety+SCOOP value proposition strong enough to overcome these disadvantages?"
+
+For most teams, the answer will be no. For teams where correctness is paramount and they're willing to invest in training and tooling, it might be yes.
+
+---
+
 **Bottom line:** The simple_* ecosystem is a proof of concept that AI can accelerate Eiffel development. It's not yet a production-ready alternative to mainstream stacks. The gap is tooling, ecosystem, and community - not the language itself.
