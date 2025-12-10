@@ -11,7 +11,15 @@ We're excited to announce **simple_lsp v0.6.0** - a Language Server Protocol imp
 - **Find All References** (Shift+F12) - Locate all usages
 - **Document/Workspace Symbols** - Navigate your codebase quickly
 - **Client/Supplier Display** - See who uses you and who you use
-- **Build Commands** - Melt, Freeze, and Finalize directly from VS Code
+
+### Build Commands (with keybindings)
+
+- **Melt** (Ctrl+Shift+B) - Quick compile
+- **Freeze** (Ctrl+Shift+F) - Full workbench rebuild
+- **Finalize** (Ctrl+Shift+R) - Release build with optimizations
+- **Compile Tests** - Build test target (command palette)
+- **Run Tests** - Execute test suite (command palette)
+- **Clean** - Delete EIFGENs folder (command palette)
 
 ## Installation
 
