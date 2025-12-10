@@ -131,14 +131,60 @@ This enables cross-project analysis: which classes are inherited most, usage pat
 
 ## Bonus: Pick-and-Drop for VS Code?
 
-Larry mentioned EiffelStudio's Pick-and-Drop technology. We're exploring whether this could be implemented in VS Code using:
+Larry mentioned EiffelStudio's Pick-and-Drop technology - one of Eiffel's most distinctive and beloved interaction paradigms. We're exploring whether this could be implemented in VS Code.
 
-- Extension state to track "picked" entity
-- Status bar to show what you're carrying
-- Keyboard shortcuts for pick/drop
-- Context-aware drop actions
+### How EiffelStudio's Pick-and-Drop Works
 
-Imagine: pick SIMPLE_JSON, drop on an inherit clause, and it adds the inheritance. That would be golden!
+For those unfamiliar:
+- **Right-click picks** an entity (class, feature, object)
+- **Cursor changes** to show you're "carrying" something
+- **Right-click on target drops** with context-aware action
+- The **drop location determines** what happens
+
+### VS Code Implementation Concept
+
+VS Code doesn't have native pick-and-drop, but we could approximate it:
+
+```
+Ctrl+Shift+P  → Pick entity under cursor
+Status bar    → Shows "🎯 Carrying: SIMPLE_JSON"
+Ctrl+Shift+D  → Drop at cursor location (context-aware)
+```
+
+### Context-Aware Drop Actions
+
+| Pick | Drop On | Action |
+|------|---------|--------|
+| Class | Empty line in editor | Insert class name |
+| Class | `inherit` clause | Add inheritance relationship |
+| Class | Feature parameter | Set as parameter type |
+| Class | `: TYPE` position | Set as return/attribute type |
+| Feature | Class body | Insert feature call with signature template |
+| Feature | `create` clause | Add as creation procedure |
+| Feature | `require` block | Insert as precondition call |
+| Feature | `ensure` block | Insert as postcondition call |
+| Feature | Another feature | Insert call (auto-complete parameters) |
+| Type | Generic constraint | Set constraint type |
+
+### Implementation Approach
+
+1. **Extension state**: Track the "picked" entity (class, feature, type)
+2. **Status bar indicator**: Show what you're carrying with visual feedback
+3. **LSP integration**: Query simple_lsp for valid drop actions at cursor
+4. **CodeActions**: Provide drop options as VS Code Quick Actions
+5. **Keyboard shortcuts**: Fast pick/drop without mouse
+
+### Why This Would Be Golden
+
+Pick-and-Drop eliminates the friction of:
+- Typing long class names correctly
+- Remembering exact feature signatures
+- Navigating menus to add inheritance
+- Copy-paste workflows for moving code
+
+Imagine: browse the class tree, pick `SIMPLE_JSON_VALUE`, navigate to your new class, drop on inherit clause - done. No typing, no errors.
+
+This is on our Phase 6 roadmap as a "visionary feature" - it would require significant extension work, but the productivity gains could be substantial.
 
 ## Full Design Document
 
