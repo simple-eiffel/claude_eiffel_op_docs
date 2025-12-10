@@ -91,7 +91,13 @@ Industry baseline for production code: 10-50 LOC/day (varies by source).
 | .NET (NuGet) | 350,000+ | Optional (NRT) | Deprecated |
 | simple_* | 54 | Mandatory | Mandatory |
 
-Note: Package count comparisons have limited utility. Different ecosystems serve different purposes and user bases.
+**On package counts:** Large numbers are not inherently good. 500,000+ packages means:
+- Dependency hell (version conflicts, transitive dependencies)
+- Security surface area (each package is a potential vulnerability)
+- Quality variance (abandoned packages, unmaintained code, duplicates)
+- Decision fatigue (which of 47 JSON libraries do you pick?)
+
+The simple_* approach: small, curated, consistent. 54 libraries with mandatory void-safety and Design by Contract. Every library follows the same patterns. Contracts travel with production code, making correctness provable at runtime.
 
 ---
 
