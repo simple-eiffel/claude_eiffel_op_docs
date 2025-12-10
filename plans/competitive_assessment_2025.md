@@ -5,6 +5,29 @@
 
 ---
 
+## CORRECTIONS (December 9, 2025)
+
+**This document contained errors that have been corrected:**
+
+1. **EWF DOES support SCOOP** - The original claim that EWF "blocks SCOOP" was **FALSE**.
+   - Confirmed by Jocelyn Fiat (Eiffel Software maintainer): "EWF supports all the known Eiffel concurrency modes: none, thread and SCOOP"
+   - Confirmed by Eric Bezault: EWF's CHANGELOG states "Made library ecf compilable in scoop concurrency mode by default"
+   - simple_web.ecf already uses `concurrency support="scoop"`
+
+2. **Gobo Eiffel VS Code Extension exists and works** - Eric Bezault's extension already provides:
+   - Go to definition (DONE)
+   - Hover documentation (DONE)  
+   - Diagnostic errors as-you-type (DONE)
+   - Find references (soon)
+   - Code completion (soon)
+   - With deep compiler integration (not just grep)
+
+3. **"Phase 1: EWF Replacement" is NOT needed** - EWF is actively maintained and SCOOP-compatible.
+
+**Lesson learned:** Verify claims with primary sources (ECF files, source code, maintainers) before publishing.
+
+---
+
 ## The Question
 
 Can Eiffel + simple_* + AI assistance compete with mainstream 2025 tech stacks for building production software?
@@ -22,12 +45,12 @@ Can Eiffel + simple_* + AI assistance compete with mainstream 2025 tech stacks f
 | HTTP server | Express, Fastify, Hono | net/http, Gin, Fiber | Actix, Axum | FastAPI, Django | simple_web (EWF wrapper) |
 | Maturity | 10+ years | 10+ years | 5+ years | 20+ years | Wrapper only |
 | Performance | Good | Excellent | Excellent | Moderate | Unknown (no benchmarks) |
-| Async/concurrency | Native promises | Goroutines | async/await, tokio | asyncio | SCOOP (blocked by EWF) |
+| Async/concurrency | Native promises | Goroutines | async/await, tokio | asyncio | SCOOP (EWF supports it) |
 | Middleware ecosystem | 1000s | 100s | 100s | 100s | ~5 |
 | Production deployments | Millions | Millions | Thousands | Millions | Handful |
 
 **Verdict:** Eiffel loses badly. simple_web is a thin wrapper around ISE's EWF, which is:
-- Not SCOOP-compatible (defeats Eiffel's concurrency model)
+- SCOOP-compatible (confirmed by Jocelyn Fiat, Dec 2025)
 - Poorly documented
 - Minimally maintained
 - No performance data
@@ -84,7 +107,7 @@ Can Eiffel + simple_* + AI assistance compete with mainstream 2025 tech stacks f
 | Practical use | Proven | Proven | Proven | Proven | Limited |
 
 **Verdict:** SCOOP is theoretically superior - data races impossible by design. But:
-- EWF dependency blocks SCOOP for web apps
+- EWF actually supports SCOOP (corrected Dec 2025)
 - Limited real-world SCOOP codebases exist
 - Documentation is academic, not practical
 - Debugging tools are immature
@@ -98,8 +121,8 @@ Can Eiffel + simple_* + AI assistance compete with mainstream 2025 tech stacks f
 | Capability | TypeScript | Go | Rust | Python | Eiffel |
 |------------|------------|-----|------|--------|--------|
 | Package manager | npm/yarn/pnpm | go mod | cargo | pip/poetry | simple_setup (custom) |
-| IDE support | VSCode, WebStorm | GoLand, VSCode | rust-analyzer | PyCharm, VSCode | EiffelStudio only |
-| LSP | Excellent | Excellent | Excellent | Excellent | None |
+| IDE support | VSCode, WebStorm | GoLand, VSCode | rust-analyzer | PyCharm, VSCode | EiffelStudio, VSCode (Gobo) |
+| LSP | Excellent | Excellent | Excellent | Excellent | Gobo extension (partial) |
 | Debugger | Chrome DevTools, VSCode | Delve | lldb/gdb | pdb, debugpy | EiffelStudio only |
 | Formatter | Prettier | gofmt | rustfmt | Black | None standard |
 | Linter | ESLint | golangci-lint | Clippy | Ruff, Flake8 | Compiler only |
@@ -262,7 +285,7 @@ DBC + void safety + SCOOP could be that reason, but only if they work together i
 ### Phase 1: Remove the EWF Dependency (Critical)
 
 **Problem:** simple_http and simple_web wrap ISE's EWF, which is:
-- Not SCOOP-compatible (blocks Eiffel's main concurrency advantage)
+- Actually SCOOP-compatible (corrected Dec 2025 - confirmed by maintainers)
 - Poorly maintained
 - A black box we don't control
 
@@ -362,7 +385,7 @@ Not perfect, but functional. Good enough for 80% of use cases. Iterate from ther
 
 | Phase | Feasibility | Impact |
 |-------|-------------|--------|
-| 1. EWF Replacement | Doable (hard) | High - unlocks SCOOP for web |
+| 1. EWF Replacement | NOT NEEDED | EWF already supports SCOOP |
 | 2. LSP | Doable (weeks) | Critical for adoption |
 | 3. Prove It Works | Doable | High - credibility |
 | 4. Fill Gaps | Doable | Medium - completeness |
