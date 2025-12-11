@@ -56,12 +56,12 @@ All library `docs/index.html` files MUST follow this template:
 
 ## Key Requirements
 
-### 1. Logo - ALWAYS Use Central URL
+### 1. Logo - Use Local Image
 ```html
-<img src="https://raw.githubusercontent.com/simple-eiffel/claude_eiffel_op_docs/main/artwork/LOGO.png" alt="simple_* logo" class="logo">
+<img src="images/logo.png" alt="simple_* logo" class="logo">
 ```
 
-**NEVER use local images/logo.png** - Always use the central GitHub raw URL.
+Each library should have `docs/images/logo.png` with the simple_* logo.
 
 ### 2. Badges
 ```html
@@ -138,7 +138,6 @@ Good examples to follow:
 
 ## DO NOT
 
-- Use local `images/logo.png` - Use central URL
 - Add extra badges like "DbC Enforced"
 - Use `index.html` in nav instead of `#overview`
 - Use different footer format
