@@ -23,9 +23,9 @@ This cycle wastes time and creates unnecessary friction.
 
 ### AI Amplification
 
-AI coding assistants exhibit the same behavior probabilistically. Given a context, they "guess" feature names based on semantic frame patterns. When wrong, the compiler forces correction. This isn't hallucination per se - it's **semantic frame bias** producing reasonable-but-wrong names.
+AI coding assistants exhibit the same behavior probabilistically. Given a context, they "guess" feature names based on semantic frame patterns. When wrong, the Eiffel compiler forces correction. This isn't hallucination per se - it's **semantic frame bias** producing reasonable-but-wrong names.
 
-The insight: these "wrong" names are **predictable**. Given a context, we can anticipate what names will be reached for.
+The insight: these "wrong" names are (probablistically or model-frame) **predictable**. Given a context, we may be quite capable of anticipating what names will be reached for (by AI or human).
 
 ## The Solution
 
@@ -53,12 +53,14 @@ All names resolve to the same implementation. No code duplication. No runtime co
 
 Instead of fighting semantic frame bias, **encode it into the supplier class upfront**:
 
-1. Identify the semantic frames (usage contexts) the class will serve
+1. Identify the potential or reasonable semantic frames (usage contexts) the class will serve
 2. For each feature, determine domain-appropriate names for each frame
 3. Add those names as comma-delimited aliases
 4. Document the semantic frames in class and feature notes
 
 The class becomes **polyglot across semantic frames**.
+
+_NOTE: This also applies to semantic framing changes across time due to cultural or industry semantic drift._
 
 ## Benefits
 
@@ -66,6 +68,7 @@ The class becomes **polyglot across semantic frames**.
 - Write code in domain-natural vocabulary
 - Less context-switching between business domain and code domain
 - Reduced lookup friction
+- Increate discoverability for reuse
 - Self-documenting semantic roles
 
 ### For AI Assistants
