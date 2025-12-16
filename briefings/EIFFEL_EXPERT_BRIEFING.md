@@ -670,6 +670,25 @@ some_call (l_value)
 - Segfaults often mean corrupted EIFGENs
 - Fix: clean compile with `-clean` flag
 
+### UUID Collisions (Critical!)
+
+**Symptom**: "Unknown class" errors for classes that clearly exist, circular dependency warnings when there shouldn't be any.
+
+**Cause**: Multiple ECF files sharing the same UUID. The compiler uses UUIDs to identify libraries - when 4 libraries claim the same UUID, the compiler thinks they're ALL the same library and gets confused about dependencies.
+
+**Diagnosis**:
+```bash
+# Find duplicate UUIDs across all ECFs
+grep -r 'uuid="' simple_*/*.ecf | sed 's/.*uuid="\([^"]*\)".*/\1/' | sort | uniq -d
+
+# Find which files have the duplicate
+grep -l 'uuid="THE-DUPLICATE-UUID"' simple_*/*.ecf
+```
+
+**Fix**: Generate new UUIDs for duplicates using `uuidgen`.
+
+**Prevention**: **NEVER copy ECF files or UUIDs between projects.** Always run `uuidgen` for new projects.
+
 ### Agent Local Variable Access
 
 Inline agents cannot access local variables:
