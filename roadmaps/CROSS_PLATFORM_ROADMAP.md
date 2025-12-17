@@ -17,21 +17,21 @@ Simple Eiffel can achieve cross-platform support through:
 
 ## Current State Analysis
 
-### Platform-Specific Libraries (11 libraries need work)
+### Platform-Specific Libraries (11 total, 5 DONE)
 
-| Library | Windows APIs | Cross-Platform Effort |
+| Library | Windows APIs | Cross-Platform Status |
 |---------|--------------|----------------------|
-| **simple_win32_api** | Facade for Win32 | Full rewrite as simple_platform |
-| **simple_registry** | RegOpenKeyExA, etc. | No Unix equivalent - use config files |
-| **simple_clipboard** | OpenClipboard, etc. | X11/Wayland + macOS NSPasteboard |
-| **simple_console** | SetConsoleTextAttribute | ANSI escape codes for Unix |
-| **simple_env** | GetEnvironmentVariableA | POSIX getenv/setenv (easy) |
-| **simple_system** | GetComputerNameA, etc. | POSIX gethostname, sysconf |
-| **simple_process** | CreateProcess | fork/exec, popen |
-| **simple_mmap** | CreateFileMapping | POSIX mmap |
-| **simple_watcher** | ReadDirectoryChangesW | inotify/FSEvents/kqueue |
-| **simple_ipc** | CreateNamedPipe | Unix sockets (stub exists) |
-| **simple_platform_api** | Win32 facade | Conditional dispatch |
+| **simple_ipc** | CreateNamedPipe | ✅ DONE - v2.0.0 cross-platform facade |
+| **simple_console** | SetConsoleTextAttribute | ✅ DONE - ANSI escape codes |
+| **simple_clipboard** | OpenClipboard, etc. | ✅ DONE - xclip/xsel/wl-clipboard |
+| **simple_process** | CreateProcess | ✅ DONE - POSIX fork/exec |
+| **simple_mmap** | CreateFileMapping | ✅ DONE - POSIX mmap/shm_open |
+| **simple_env** | GetEnvironmentVariableA | ⏳ TODO - POSIX getenv/setenv (easy) |
+| **simple_system** | GetComputerNameA, etc. | ⏳ TODO - POSIX gethostname, sysconf |
+| **simple_watcher** | ReadDirectoryChangesW | ⏳ TODO - inotify/FSEvents/kqueue |
+| **simple_win32_api** | Facade for Win32 | ⏳ TODO - Rewrite as simple_platform |
+| **simple_registry** | RegOpenKeyExA, etc. | ⏳ TODO - No Unix equiv, use config fallback |
+| **simple_platform_api** | Win32 facade | ⏳ TODO - Conditional dispatch |
 
 ### Platform-Agnostic Libraries (60+ libraries)
 
@@ -181,16 +181,16 @@ feature
 end
 ```
 
-### Priority Order
+### Priority Order (Updated Dec 2025)
 
-1. **simple_env** (1-2 days) - Easiest, uses POSIX getenv/setenv
-2. **simple_console** (2-3 days) - ANSI escape codes
-3. **simple_process** (3-5 days) - fork/exec via Gobo
-4. **simple_ipc** (3-5 days) - Unix socket stub ready
-5. **simple_mmap** (2-3 days) - POSIX mmap
-6. **simple_watcher** (5-7 days) - inotify/FSEvents
-7. **simple_clipboard** (3-5 days) - X11/macOS
-8. **simple_system** (3-5 days) - POSIX equivalents
+1. ~~**simple_console** (2-3 days) - ANSI escape codes~~ ✅ DONE
+2. ~~**simple_clipboard** (3-5 days) - X11/macOS~~ ✅ DONE
+3. ~~**simple_process** (3-5 days) - fork/exec~~ ✅ DONE
+4. ~~**simple_ipc** (3-5 days) - Unix socket~~ ✅ DONE
+5. ~~**simple_mmap** (2-3 days) - POSIX mmap~~ ✅ DONE
+6. **simple_env** (1-2 days) - Easiest, uses POSIX getenv/setenv
+7. **simple_system** (3-5 days) - POSIX equivalents
+8. **simple_watcher** (5-7 days) - inotify/FSEvents
 
 ---
 
@@ -246,19 +246,19 @@ end
 
 ### Phase 2: Quick Wins (Week 3-4)
 - [ ] Cross-platform simple_env
-- [ ] Cross-platform simple_console
+- [x] Cross-platform simple_console ✅ Dec 2025
 - [ ] Update simple_pdf with Linux/macOS tool paths
 
 ### Phase 3: Core Platform Layer (Week 5-8)
 - [ ] Add Gobo as ecosystem dependency
 - [ ] Create simple_platform abstraction
-- [ ] Cross-platform simple_process
-- [ ] Cross-platform simple_ipc
+- [x] Cross-platform simple_process ✅ Dec 2025
+- [x] Cross-platform simple_ipc ✅ Dec 2025 (v2.0.0)
 
 ### Phase 4: Advanced Features (Week 9-12)
-- [ ] Cross-platform simple_mmap
+- [x] Cross-platform simple_mmap ✅ Dec 2025
 - [ ] Cross-platform simple_watcher
-- [ ] Cross-platform simple_clipboard
+- [x] Cross-platform simple_clipboard ✅ Dec 2025
 - [ ] Cross-platform simple_system
 
 ### Phase 5: macOS Validation (Ongoing)
