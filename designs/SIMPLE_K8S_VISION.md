@@ -1120,3 +1120,83 @@ pipeline.add_stage ("deploy", agent
 | Blue/Green | Yes | Instant | 2x | Medium |
 | Canary | Yes | Fast | 1x + canary | Medium |
 | Progressive | Yes | Automatic | 1x + canary | High |
+
+
+---
+
+## API Design Philosophy
+
+### SDK Influence Analysis
+
+| SDK | What to Adopt | What to Avoid |
+|-----|---------------|---------------|
+| **Go (client-go)** | Informer/watch patterns | Verbose boilerplate |
+| **Python** | Simplicity, readability | Stringly-typed |
+| **Rust (kube-rs)** | Fluent builders, strong typing | Async complexity |
+| **kubectl CLI** | Command naming, one-liner patterns | N/A - UX gold standard |
+| **.NET** | Fluent async patterns | Over-abstraction |
+
+**Primary Models:** kube-rs (builders), kubectl (QUICK patterns), Python (simplicity)
+
+### Pain Points Addressed
+
+| Pain Point | simple_k8s Solution |
+|------------|---------------------|
+| Verbose NULL-heavy APIs | Fluent builders with sensible defaults |
+| Stringly-typed configs | Strong typing: POD_SPEC, DEPLOYMENT_SPEC |
+| Complex auth setup | make_with_kubeconfig just works |
+| Cryptic errors | K8S_ERROR with reason, message, retry guidance |
+| No retry logic | Built-in retry with exponential backoff |
+| State confusion | DBC contracts enforce valid transitions |
+| Callback hell | Synchronous by default, SCOOP for async |
+
+---
+
+## Three-Tier API Architecture
+
+```
+Tier 1: KUBECTL_QUICK / K8S_DEPLOY_QUICK (one-liners, patterns)
+    |
+    v
+Tier 2: K8S_CLIENT + Spec Classes (full control, fluent builders)
+    |
+    v
+Tier 3: Low-level HTTP (custom resources, raw API)
+```
+
+### Tier 1: KUBECTL_QUICK
+
+kubectl-parity one-liners:
+- run(name, image) - create pod
+- create_deployment(name, image, replicas)
+- scale(deployment, replicas)
+- expose(deployment, port) / expose_lb()
+- logs(pod) / logs_follow(pod)
+- exec(pod, command)
+- restart(deployment)
+- rollback(deployment)
+- pods / deployments / services - list queries
+- apply(yaml_path)
+- delete_pod/deployment/service(name)
+
+### Tier 1.5: K8S_DEPLOY_QUICK
+
+High-level deployment patterns:
+- deploy_and_expose(name, image, port, replicas)
+- rolling_update(deployment, new_image, timeout)
+- rolling_update_or_rollback(deployment, new_image, timeout)
+- blue_green_deploy(service, new_image, version)
+- blue_green_switch(service, version)
+- blue_green_rollback(service)
+- canary_deploy(deployment, image, percentage)
+- canary_promote(deployment)
+- canary_abort(deployment)
+- progressive_deploy(deployment, image)
+
+### Tier 2: K8S_CLIENT
+
+Full control with spec classes (POD_SPEC, DEPLOYMENT_SPEC, SERVICE_SPEC).
+
+### Tier 3: Low-Level
+
+Direct HTTP: api_get(), api_post(), api_patch(), api_delete(), custom_resource()
