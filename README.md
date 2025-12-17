@@ -38,7 +38,12 @@ reference_docs/
 │   └── inline_c_migration_report.md
 │
 ├── deployment/              ← Deployment guides
+│   ├── MAC_MINI_REMOTE_ACCESS.md - SSH, VS Code Remote, VNC setup
 │   └── ORACLE_CLOUD_DEPLOYMENT.md
+│
+├── roadmaps/                ← Strategic planning
+│   ├── CROSS_PLATFORM_ROADMAP.md - Windows/Linux/macOS support (8/11 done)
+│   └── ECOSYSTEM_EXPANSION_ROADMAP_2025.md
 │
 ├── posts/                   ← Blog post drafts
 │   ├── simple_pdf_development_post.md
@@ -93,4 +98,4 @@ When you learn something:
 
 ---
 
-*Last updated: 2025-12-09*
+*Last updated: 2025-12-16*
