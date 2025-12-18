@@ -169,6 +169,142 @@ feature {NONE} -- Initialization
         end
 ```
 
+
+### Creation Procedure Design Principle
+
+**RULE: Don't let client code dictate supplier design.**
+
+When a client calls `create obj.make` but the supplier has no `make`, ask these questions before "fixing" anything:
+
+**The Design Hierarchy of Questions:**
+
+1. **Does this feature NEED initialization at all?** (Or is it computed/derived?)
+2. **If yes, must it be at creation time?** (Or can it use lazy initialization via `once`?)
+3. **If eager, for WHICH creation contexts?** (Different makes can initialize different subsets)
+4. **Will the object ever need re-initialization?** (If yes, `once` features are wrong)
+5. **What arguments does initialization need?** (Factory features vs direct create)
+
+**Anti-Pattern: Empty Makes**
+
+```eiffel
+-- WRONG: Creating empty make just to satisfy client
+class FOUNDATION_API
+create
+    make  -- Empty, pointless
+
+feature {NONE}
+    make do end  -- Does nothing - why does it exist?
+```
+
+If a supplier was designed without `make` (using `default_create`), and the supplier author knew what they were doing, **fix the client**:
+
+```eiffel
+-- Client fix: use default_create
+create foundation  -- NOT create foundation.make
+```
+
+**When `make` IS Necessary:**
+
+- **Required parameters**: Connection strings, file paths, configuration
+- **Immediate resource acquisition**: Open files, establish connections
+- **Invariant establishment**: State that must be non-default from creation
+- **Explicit dependency injection**: Dependencies provided at creation
+
+**Lazy Initialization Pattern (Preferred When Applicable):**
+
+```eiffel
+class FOUNDATION_API
+-- No explicit make needed - uses default_create
+-- Helpers created lazily on first access
+
+feature -- Lazy helpers
+    json_helper: JSON_HELPER
+        once
+            create Result.make
+        end
+
+    http_helper: HTTP_HELPER
+        once
+            create Result.make
+        end
+```
+
+**Multiple Makes for Different Contexts:**
+
+```eiffel
+create
+    make,                    -- Minimal: lazy everything
+    make_with_connection,    -- Eager: connection; lazy: rest
+    make_full                -- Eager: everything initialized
+
+feature {NONE} -- Initialization
+
+    make
+        do
+            -- Minimal setup, rest is lazy
+        end
+
+    make_with_connection (a_conn: CONNECTION)
+        require
+            conn_valid: a_conn /= Void
+        do
+            make
+            connection := a_conn  -- Eager for this context
+        ensure
+            connection_set: connection = a_conn
+        end
+```
+
+**Re-initialization Changes Everything:**
+
+If `make` can be called for RE-initialization (resetting object state):
+
+- `once` features are **wrong** (cannot be reset)
+- Once-per-object is **also wrong** (same problem)
+- Use factory features + setters instead:
+
+```eiffel
+feature -- Factory (can be called repeatedly)
+    new_helper (a_config: CONFIG): HELPER
+        do
+            create Result.make (a_config)
+        end
+
+feature -- Initialization AND Re-initialization
+    make (a_config: CONFIG)
+        do
+            helper := new_helper (a_config)  -- Fresh each time
+        end
+
+    reset
+        do
+            make (default_config)  -- Re-initialize to defaults
+        end
+```
+
+**Contract Implications:**
+
+Different creation procedures have different postconditions:
+
+```eiffel
+make
+    ensure
+        minimal_state: is_initialized
+        -- Other features may be Void/lazy
+
+make_full
+    ensure
+        full_state: is_initialized
+        connection_ready: connection /= Void
+        cache_ready: cache /= Void
+```
+
+This connects to void safety - postconditions declare what's guaranteed attached after each creation procedure.
+
+**Summary:**
+
+> Understand the full lifecycle of the object and its features. Design creation procedures that match actual client contexts, not imagined ones. Lazy is often right. Multiple makes serving different needs is often right. Empty makes serving no purpose are **always wrong**.
+
 ### Inheritance
 
 ```eiffel

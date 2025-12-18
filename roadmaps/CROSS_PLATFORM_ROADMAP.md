@@ -17,7 +17,7 @@ Simple Eiffel can achieve cross-platform support through:
 
 ## Current State Analysis
 
-### Platform-Specific Libraries (11 total, 5 DONE)
+### Platform-Specific Libraries (11 total, 10 DONE)
 
 | Library | Windows APIs | Cross-Platform Status |
 |---------|--------------|----------------------|
@@ -26,12 +26,17 @@ Simple Eiffel can achieve cross-platform support through:
 | **simple_clipboard** | OpenClipboard, etc. | ✅ DONE - xclip/xsel/wl-clipboard |
 | **simple_process** | CreateProcess | ✅ DONE - POSIX fork/exec |
 | **simple_mmap** | CreateFileMapping | ✅ DONE - POSIX mmap/shm_open |
-| **simple_env** | GetEnvironmentVariableA | ⏳ TODO - POSIX getenv/setenv (easy) |
-| **simple_system** | GetComputerNameA, etc. | ⏳ TODO - POSIX gethostname, sysconf |
-| **simple_watcher** | ReadDirectoryChangesW | ⏳ TODO - inotify/FSEvents/kqueue |
-| **simple_win32_api** | Facade for Win32 | ⏳ TODO - Rewrite as simple_platform |
-| **simple_registry** | RegOpenKeyExA, etc. | ⏳ TODO - No Unix equiv, use config fallback |
-| **simple_platform_api** | Win32 facade | ⏳ TODO - Conditional dispatch |
+| **simple_env** | GetEnvironmentVariableA | ✅ DONE - POSIX getenv/setenv/environ |
+| **simple_system** | GetComputerNameA, etc. | ✅ DONE - POSIX gethostname, sysconf, uname |
+| **simple_watcher** | ReadDirectoryChangesW | ✅ DONE - inotify (Linux), macOS FSEvents pending Mac Mini |
+| **simple_win32_api** | Facade for Win32 | ✅ DONE - Pure Eiffel facade, already cross-platform |
+| **simple_registry** | RegOpenKeyExA, etc. | ✅ DONE - File-based config fallback (~/.config/) |
+| **simple_platform_api** | Win32 facade | ✅ DONE - Pure Eiffel facade, already cross-platform |
+
+### Also Updated
+| Library | Status |
+|---------|--------|
+| **simple_pdf** | ✅ DONE - Cross-platform tool detection (pdftotext, wkhtmltopdf, Chrome) |
 
 ### Platform-Agnostic Libraries (60+ libraries)
 
@@ -188,9 +193,11 @@ end
 3. ~~**simple_process** (3-5 days) - fork/exec~~ ✅ DONE
 4. ~~**simple_ipc** (3-5 days) - Unix socket~~ ✅ DONE
 5. ~~**simple_mmap** (2-3 days) - POSIX mmap~~ ✅ DONE
-6. **simple_env** (1-2 days) - Easiest, uses POSIX getenv/setenv
-7. **simple_system** (3-5 days) - POSIX equivalents
-8. **simple_watcher** (5-7 days) - inotify/FSEvents
+6. ~~**simple_env** (1-2 days) - POSIX getenv/setenv~~ ✅ DONE
+7. ~~**simple_system** (3-5 days) - POSIX equivalents~~ ✅ DONE
+8. ~~**simple_watcher** (5-7 days) - inotify~~ ✅ DONE (macOS FSEvents pending)
+9. ~~**simple_registry** - File-based config fallback~~ ✅ DONE
+10. ~~**simple_pdf** - Cross-platform tool detection~~ ✅ DONE
 
 ---
 
@@ -232,8 +239,8 @@ end
 
 ### Simple Eiffel
 - Hardcoded `D:\prod` paths in tests/docs (fixed now with SIMPLE_EIFFEL)
-- Win32 inline C in 11 libraries
-- simple_pdf has hardcoded Windows tool paths
+- ~~Win32 inline C in 11 libraries~~ → All 10 now cross-platform
+- ~~simple_pdf has hardcoded Windows tool paths~~ → Now cross-platform
 
 ---
 
@@ -245,9 +252,9 @@ end
 - [ ] Add CI/CD workflow for Linux testing
 
 ### Phase 2: Quick Wins (Week 3-4)
-- [ ] Cross-platform simple_env
+- [x] Cross-platform simple_env ✅ Dec 2025
 - [x] Cross-platform simple_console ✅ Dec 2025
-- [ ] Update simple_pdf with Linux/macOS tool paths
+- [x] Update simple_pdf with Linux/macOS tool paths ✅ Dec 2025
 
 ### Phase 3: Core Platform Layer (Week 5-8)
 - [ ] Add Gobo as ecosystem dependency
@@ -257,9 +264,10 @@ end
 
 ### Phase 4: Advanced Features (Week 9-12)
 - [x] Cross-platform simple_mmap ✅ Dec 2025
-- [ ] Cross-platform simple_watcher
+- [x] Cross-platform simple_watcher (Linux) ✅ Dec 2025
 - [x] Cross-platform simple_clipboard ✅ Dec 2025
-- [ ] Cross-platform simple_system
+- [x] Cross-platform simple_system ✅ Dec 2025
+- [x] Cross-platform simple_registry (config fallback) ✅ Dec 2025
 
 ### Phase 5: macOS Validation (Ongoing)
 - [ ] Test all libraries on Mac Mini
