@@ -234,3 +234,55 @@ eiffel_notebook --port 8080
 
 *Document created: 2024-12-18*
 *Status: Vision / Planning*
+
+## Historical Context
+
+EiffelNotebook continues a long tradition of interactive development environments:
+
+| Era | Tool | Key Innovation |
+|-----|------|----------------|
+| 1980s | Smalltalk Workspace | Execute any code, inspect objects live |
+| 1990s | Visual FoxPro Command Window | Immediate execution, persistent state, test before commit to PRG |
+| 1990s | LISP/Scheme REPL | Read-eval-print loop, homoiconic exploration |
+| 2000s | IRB (Ruby), Python REPL | Interactive shells for dynamic languages |
+| 2011 | IPython Notebook (→ Jupyter) | Cells + markdown + sharing + rich output |
+| 202x | EiffelNotebook | Same workflow, for a compiled language |
+
+### The VFP Command Window Feel
+
+Visual FoxPro developers loved the Command Window because it enabled *exploratory programming*:
+
+```
+? 2 + 2                           && instant result: 4
+x = 42                            && variable persists
+? x * 2                           && 84
+SELECT * FROM customers WHERE id = x   && test queries live
+```
+
+You could:
+- Run one-liners or paste multi-line blocks
+- Variables and state persisted across commands
+- Test ideas before committing to PRG files
+- Inspect and modify live data
+
+This workflow - **try something, see result, iterate** - is exactly what Jupyter brought to Python and what EiffelNotebook brings to Eiffel.
+
+### The Only Difference: Compile Step
+
+| Environment | Execution | Delay |
+|-------------|-----------|-------|
+| VFP Command Window | Interpreted | Instant |
+| Python/Jupyter | Interpreted | Instant |
+| EiffelNotebook | Compiled (melting) | ~1-3 seconds |
+
+The 1-3 second delay is acceptable because the *workflow* remains the same. Notebooks are for exploration and documentation, not tight iteration loops. Users expect "run cell, see result" - a brief compile spinner doesn't break the flow.
+
+### Jupyter's Additions
+
+Jupyter extended the REPL concept with:
+- **Persistence** - Save sessions as shareable documents
+- **Literate programming** - Mix prose (markdown) with code
+- **Rich output** - Charts, images, HTML, not just text
+- **Reproducibility** - Re-run entire notebook top to bottom
+
+EiffelNotebook inherits all of these.
