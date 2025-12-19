@@ -946,15 +946,225 @@ export SIMPLE_TESTING=/d/prod/simple_testing
 
 ## Part 6: API Facades Pattern
 
-The ecosystem uses layered API facades:
+The ecosystem uses layered API facades to provide unified access to functionality while hiding internal library complexity.
 
-1. **simple_foundation_api** - Core utilities (json, file, process, env, datetime, etc.)
-2. **simple_service_api** - Web services (jwt, smtp, sql, cors, rate limiting, etc.)
-3. **simple_app_api** - Full application (foundation + service + web + htmx)
-4. **simple_platform_api** - Windows platform (win32, registry, clipboard, etc.)
+### Facade Hierarchy
 
-Import the appropriate facade rather than individual libraries.
+| Layer | API Facade | Consumes | Provides |
+|-------|-----------|----------|----------|
+| **Foundation** | `simple_foundation_api` | 25+ core libs | JSON, file, env, hash, config, datetime, regex, xml, yaml |
+| **Services** | `simple_service_api` | foundation_api + 20 service libs | JWT, SMTP, SQL, web, websocket, cache, PDF, scheduler |
+| **Platform** | `simple_platform_api` | win32_api + OS libs | Registry, clipboard, mmap, IPC, system info, file watcher |
+| **Application** | `simple_app_api` | service_api + platform_api | Full application capabilities |
 
+**Key Rule**: Each layer ONLY consumes the layer directly below. Clients use ONE facade, never reach through to enclosed libraries.
+
+### ECF Structure
+
+A facade ECF includes ALL underlying libraries directly:
+
+```xml
+<system name="simple_foundation_api" uuid="..." library_target="simple_foundation_api">
+    <target name="simple_foundation_api">
+        <root all_classes="true"/>
+        <capability>
+            <concurrency support="scoop" use="thread"/>
+            <void_safety support="all"/>
+        </capability>
+
+        <!-- Core dependencies -->
+        <library name="base" location="$ISE_LIBRARY\library\base\base.ecf"/>
+
+        <!-- ALL underlying simple_* libraries included directly -->
+        <library name="simple_json" location="$SIMPLE_EIFFEL\simple_json\simple_json.ecf"/>
+        <library name="simple_file" location="$SIMPLE_EIFFEL\simple_file\simple_file.ecf"/>
+        <library name="simple_hash" location="$SIMPLE_EIFFEL\simple_hash\simple_hash.ecf"/>
+        <!-- ... 20+ more libraries ... -->
+
+        <cluster name="src" location=".\src\" recursive="true"/>
+    </target>
+</system>
+```
+
+**Critical**: Client ECFs only need `<library name="simple_foundation_api" .../>` - they get all underlying libs transitively.
+
+### Main Facade Class Implementation
+
+The facade class (e.g., `FOUNDATION_API`) provides **three types of features** per domain:
+
+#### 1. Convenience Methods (One-Liners)
+
+Direct operations that clients call most often:
+
+```eiffel
+feature -- Hashing convenience
+
+    sha256 (a_input: STRING): STRING
+            -- SHA-256 hash of `a_input`
+        require
+            input_valid: a_input /= Void
+        do
+            Result := hasher.sha256 (a_input)
+        ensure
+            result_attached: Result /= Void
+            result_64_chars: Result.count = 64
+        end
+```
+
+#### 2. Factory Methods (Return Configured Objects)
+
+When clients need objects for extended interaction:
+
+```eiffel
+feature -- Factory
+
+    new_logger (a_name: STRING): SIMPLE_LOGGER
+            -- New logger with `a_name`
+        require
+            name_valid: a_name /= Void and then not a_name.is_empty
+        do
+            create Result.make (a_name)
+        ensure
+            result_attached: Result /= Void
+        end
+```
+
+#### 3. Direct Access (Expose Underlying Helpers)
+
+When clients need full control over an underlying system:
+
+```eiffel
+feature -- Direct access
+
+    json: JSON_HELPER
+            -- Direct access to JSON helper for complex operations
+        do
+            Result := json_internal
+        end
+```
+
+### Lazy Initialization Pattern
+
+**Critical Design**: Facades use `once ("OBJECT")` for lazy initialization - no explicit creation procedure needed:
+
+```eiffel
+class
+    FOUNDATION_API
+
+-- No creation procedure listed - uses default_create
+-- Client just: create foundation
+
+feature {NONE} -- Internal helpers (lazy initialized)
+
+    hasher: SIMPLE_HASH
+            -- Hash helper, created on first access
+        once ("OBJECT")
+            create Result.make
+        end
+
+    json_internal: JSON_HELPER
+            -- JSON helper, created on first access
+        once ("OBJECT")
+            create Result.make
+        end
+```
+
+**Why `once ("OBJECT")`**:
+- `once ("PROCESS")` - single instance per process (wrong: all facades share)
+- `once ("THREAD")` - single instance per thread (wrong: loses object isolation)
+- `once ("OBJECT")` - single instance per object (correct: each facade has own helpers)
+
+### Multiple Aliases for Discoverability
+
+Provide multiple names for the same feature to improve API discoverability:
+
+```eiffel
+feature -- Hashing
+
+    sha256,
+    hash_sha256,
+    sha256_hash (a_input: STRING): STRING
+            -- SHA-256 hash of `a_input`
+            -- Multiple aliases for discoverability
+        do
+            Result := hasher.sha256 (a_input)
+        end
+```
+
+### Backward Compatibility Alias Class
+
+For renaming main class without breaking clients:
+
+```eiffel
+class FOUNDATION inherit FOUNDATION_API end
+```
+
+### Client Usage Pattern
+
+Clients inherit or create the facade:
+
+```eiffel
+class MY_APPLICATION
+inherit
+    FOUNDATION_API  -- Inherit for direct access
+
+feature -- Operations
+    process_data (a_json_text: STRING)
+        do
+            -- Convenience method
+            print (sha256 (a_json_text))
+
+            -- Direct access when needed
+            if json.is_valid (a_json_text) then
+                -- complex operations
+            end
+        end
+```
+
+Or create as attribute:
+
+```eiffel
+class MY_SERVICE
+feature {NONE} -- Initialization
+    make
+        do
+            create foundation  -- Uses default_create
+        end
+
+feature {NONE} -- Implementation
+    foundation: FOUNDATION_API
+```
+
+### Anti-Pattern: Reaching Through
+
+**WRONG**: Client reaching through facade to enclosed library:
+
+```xml
+<!-- Client ECF -->
+<library name="simple_foundation_api" location="..."/>
+<library name="simple_hash" location="..."/>  <!-- WRONG: reaching through -->
+```
+
+```eiffel
+-- Client code using enclosed library directly
+local l_hasher: SIMPLE_HASH  -- WRONG
+do create l_hasher.make
+```
+
+**CORRECT**: Use facade features only:
+
+```eiffel
+inherit FOUNDATION_API
+do Result := sha256 (input)  -- Use facade feature
+```
+
+### Benefits
+
+1. **Single ECF dependency** - clients include one library, get everything
+2. **Stable API** - internal changes don't affect clients
+3. **Discoverability** - all features in one class with aliases
+4. **Lazy loading** - helpers created only when used
+5. **Testability** - mock facade for testing, not 20 individual libs
 ---
 
 ## Part 7: Review Checklist
