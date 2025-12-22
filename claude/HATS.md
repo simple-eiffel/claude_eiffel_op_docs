@@ -103,6 +103,19 @@ ensure
 - [ ] Preconditions - what callers must guarantee
 - [ ] Postconditions - what the feature guarantees (use `old` where needed)
 
+**Aggressiveness Note**:
+- Be AGGRESSIVE with contracting - add meaningful contracts liberally
+- But NOT overly strict - contracts should be achievable, not pedantic
+- AVOID TRIVIAL contracts that add no value:
+  - `x /= Void` is SILLY in a void-safe system (compiler already guarantees this)
+  - `Result /= Void` on attached return types - redundant
+  - `a_string.count >= 0` - always true by definition
+- GOOD contracts express domain logic, not type system guarantees
+
+**Naming Convention**:
+- Feature local variables MUST be prefixed with `l_` (e.g., `l_file`, `l_count`, `l_result`)
+- This distinguishes locals from attributes and parameters
+
 **Avoid**: Adding features, refactoring, changing logic - only add/improve contracts
 
 ---
