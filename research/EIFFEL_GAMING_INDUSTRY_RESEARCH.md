@@ -1016,3 +1016,436 @@ This section provides a comprehensive assessment of EVERY library needed to make
 *Research updated: December 26, 2024*
 *Added: Dead code analysis, GC deep dive, comprehensive library requirements*
 *Produced for: Simple Eiffel ecosystem strategic planning*
+
+---
+
+## Step 12: Eiffel GC Control Capabilities - Critical Discovery
+
+### CORRECTION: C++ Has NO Garbage Collection
+
+A fundamental clarification is necessary: **C++ does not have a garbage collector**.
+
+C++ uses **manual memory management**:
+- `new` / `delete` for heap allocation
+- `malloc` / `free` from C
+- Smart pointers (`unique_ptr`, `shared_ptr`) for RAII
+- Developer is fully responsible for memory lifecycle
+
+**Why C++ has zero GC pauses**:
+- There is no GC to pause
+- Memory is freed exactly when the programmer says
+- Trade-off: Memory bugs (dangling pointers, use-after-free, double-free)
+
+**The real comparison**:
+
+| Aspect | Eiffel | C++ |
+|--------|--------|-----|
+| Memory model | GC (with controls) | Manual (no GC) |
+| Pause time | Controllable (see below) | 0ms (no GC exists) |
+| Memory safety | Guaranteed | Developer responsibility |
+| Memory bugs | Nearly impossible | Common crash cause |
+| Development speed | Faster (no manual memory) | Slower (debugging memory) |
+
+The question is not "Eiffel GC vs C++ GC" but rather "Controlled GC vs Manual Memory".
+
+### EiffelStudio MEMORY Class - Extensive GC Control
+
+Research of the EiffelStudio `MEMORY` class (`$ISE_LIBRARY/base/elks/kernel/memory.e`) reveals **extensive garbage collection control** that was not initially documented:
+
+#### Full GC On/Off Control
+
+```eiffel
+collection_off
+    -- Disable garbage collection completely
+
+collection_on
+    -- Re-enable garbage collection
+
+execute_without_collection (a_action: PROCEDURE)
+    -- Execute `a_action` with GC disabled
+    -- Automatically re-enables GC after completion
+```
+
+**Gaming Application**: Disable GC during critical frame rendering, re-enable during loading screens.
+
+#### Manual Memory Deallocation
+
+```eiffel
+free (object: ANY)
+    -- Explicitly free `object` from memory
+    -- Bypass GC entirely for immediate deallocation
+```
+
+**This is a game-changer**: Eiffel CAN use manual memory management like C++ when needed. Developers can:
+- Pool objects and manually free them
+- Avoid GC entirely for performance-critical objects
+- Mix GC and manual memory as appropriate
+
+#### GC Tuning Parameters
+
+```eiffel
+set_memory_threshold (value: INTEGER)
+    -- Set memory threshold for triggering collection
+    -- Larger values = less frequent but larger GC runs
+
+set_collection_period (value: INTEGER)
+    -- Set ratio of partial to full collections
+    -- Higher values = more partial collections before full sweep
+
+allocate_fast
+    -- Optimize allocator for speed over memory
+    -- Good for games where allocation speed matters
+
+allocate_compact
+    -- Optimize allocator for memory over speed
+    -- Good for memory-constrained platforms
+```
+
+#### Generational GC Exists
+
+```eiffel
+tenure: INTEGER
+    -- Age at which objects become "old"
+    -- Younger objects collected more frequently
+
+generation_object_limit: INTEGER
+    -- Maximum size of objects in generational zone
+
+scavenge_zone_size: INTEGER
+    -- Size of the young generation scavenge zone
+```
+
+**Generational GC** means:
+- Young objects (new allocations) collected quickly
+- Old objects (survived multiple collections) collected rarely
+- Game objects that live across frames become "tenured" and rarely pause
+
+#### Incremental Collector Exists
+
+The `GC_INFO` class (`$ISE_LIBRARY/base/elks/kernel/gc_info.e`) reveals:
+
+```eiffel
+Incremental_collector: INTEGER = 1
+Full_collector: INTEGER = 0
+```
+
+**This contradicts earlier assumptions**: EiffelStudio DOES have an incremental collector option. This needs benchmarking.
+
+#### GC Statistics for Profiling
+
+```eiffel
+class GC_INFO
+feature
+    cpu_time: REAL_64      -- CPU time spent in GC
+    real_time: REAL_64     -- Wall-clock time for GC
+    cycle_count: INTEGER   -- Number of GC cycles
+    collected: INTEGER_64  -- Bytes collected
+    memory_used: INTEGER_64 -- Current heap usage
+```
+
+**Gaming Application**: Profile exact GC timing during gameplay to identify pause patterns.
+
+### Revised GC Assessment for Gaming
+
+Given these discoveries, the GC viability assessment changes significantly:
+
+| Strategy | Feasibility | Description |
+|----------|-------------|-------------|
+| **Disable during gameplay** | HIGH | `collection_off` during critical loops |
+| **Manual deallocation** | HIGH | `free()` for pooled objects |
+| **Generational tuning** | MEDIUM | Tune tenure/scavenge settings |
+| **Incremental collection** | UNKNOWN | Needs benchmarking |
+| **Threshold tuning** | MEDIUM | Prevent GC during small heaps |
+| **GC during load screens** | HIGH | Forced `full_collect` when acceptable |
+
+### Revised GC Viability by Game Type
+
+| Game Type | Previous Rating | Revised Rating | Rationale |
+|-----------|-----------------|----------------|-----------|
+| Turn-based strategy | HIGH | HIGH | Pauses acceptable |
+| Puzzle games | HIGH | HIGH | Low allocation |
+| Visual novels | HIGH | HIGH | Mostly static |
+| 2D platformers | MEDIUM | HIGH | GC off during gameplay |
+| 3D action games | LOW | MEDIUM | With careful pooling + GC control |
+| Competitive multiplayer | VERY LOW | MEDIUM | Requires rigorous memory design |
+| VR games (90fps) | NOT VIABLE | LOW | Tight but possible with discipline |
+
+### Critical Gap: Benchmarking Required
+
+**The Problem**: We have documented capabilities but no empirical data.
+
+**What We Need to Prove**:
+
+1. **GC pause duration**: Actual measured pause times with:
+   - Various heap sizes (10MB, 50MB, 100MB)
+   - Various object counts (1K, 10K, 100K)
+   - Different GC modes (full, incremental, generational)
+
+2. **Frame timing stability**: Can we maintain stable 16.67ms frames?
+   - Measure frame time variance with GC enabled
+   - Measure with `collection_off` during game loop
+   - Measure with manual `free()` patterns
+
+3. **Incremental collector behavior**: Does it actually work for games?
+   - How much work per frame?
+   - How to tune step size?
+   - Pause characteristics
+
+4. **Memory patterns**: What is the optimal strategy?
+   - Object pool sizes
+   - When to trigger manual collection
+   - Generational tuning for game objects
+
+### Proposed Benchmarking Experiments
+
+#### Experiment 1: Baseline GC Timing
+
+```eiffel
+class GC_BENCHMARK
+feature
+    run_allocation_benchmark
+        local
+            objects: ARRAYED_LIST [ANY]
+            gc: GC_INFO
+            i: INTEGER
+        do
+            create objects.make (100_000)
+            create gc.make (Full_collector)
+
+            -- Allocate many objects
+            from i := 1 until i > 100_000 loop
+                objects.extend (create {STRING}.make (100))
+                i := i + 1
+            end
+
+            -- Force collection and measure
+            gc.update
+            full_collect
+            gc.update
+
+            print ("GC time: " + gc.real_time.out + " ms%N")
+        end
+end
+```
+
+#### Experiment 2: Frame Stability Test
+
+```eiffel
+class FRAME_STABILITY_TEST
+feature
+    test_frame_timing
+        local
+            frame_times: ARRAYED_LIST [REAL_64]
+            start_time, end_time: REAL_64
+            i: INTEGER
+        do
+            create frame_times.make (1000)
+
+            -- Test with GC enabled
+            from i := 1 until i > 1000 loop
+                start_time := precise_time_now
+                simulate_game_frame
+                end_time := precise_time_now
+                frame_times.extend (end_time - start_time)
+                i := i + 1
+            end
+
+            analyze_frame_variance (frame_times)
+
+            -- Test with GC disabled
+            collection_off
+            frame_times.wipe_out
+
+            from i := 1 until i > 1000 loop
+                start_time := precise_time_now
+                simulate_game_frame
+                end_time := precise_time_now
+                frame_times.extend (end_time - start_time)
+                i := i + 1
+            end
+
+            collection_on
+            full_collect  -- Clean up after test
+
+            analyze_frame_variance (frame_times)
+        end
+end
+```
+
+#### Experiment 3: Object Pool Pattern
+
+```eiffel
+class POOLED_BULLET
+inherit
+    POOLABLE_OBJECT
+
+feature
+    reset (new_x, new_y: REAL_64)
+        do
+            x := new_x
+            y := new_y
+            active := True
+        end
+
+    deactivate
+        do
+            active := False
+            pool.return (Current)  -- Return to pool, not garbage
+        end
+end
+
+class BULLET_POOL
+feature
+    acquire: POOLED_BULLET
+        do
+            if available_bullets.is_empty then
+                -- Only allocate if pool empty
+                create Result.make
+            else
+                Result := available_bullets.item
+                available_bullets.remove
+            end
+        end
+
+    return (bullet: POOLED_BULLET)
+        do
+            available_bullets.extend (bullet)
+        end
+end
+```
+
+### The Case for simple_lua in Indie Gaming
+
+Given the GC control discoveries, the strategic case for simple_lua becomes stronger:
+
+#### Why Indie Games Are the Target Market
+
+1. **Resource constraints match our strengths**
+   - Indie teams cannot afford memory bugs that crash games
+   - DBC prevents entire categories of bugs
+   - Void safety eliminates null pointer crashes
+   - Less debugging time = faster development
+
+2. **Performance requirements are achievable**
+   - Most indie games do not need 60fps (30fps acceptable)
+   - Turn-based, puzzle, narrative games are ideal
+   - 2D games have lower overhead than 3D AAA titles
+
+3. **Lua is already the indie scripting standard**
+   - Love2D, Defold, Corona - all Lua-based
+   - Indie devs already know Lua
+   - simple_lua provides familiar ground
+
+4. **Correctness is a marketing differentiator**
+   - "Crash-free games" is a real selling point
+   - Professional-quality tools attract serious developers
+   - Enterprise/educational markets value correctness
+
+#### The Eiffel + Lua Indie Gaming Stack
+
+```
++---------------------------------------------+
+|            Game Logic (Lua)                 |  <- Familiar to game devs
+|  - Entity behaviors                         |  <- Rapid iteration
+|  - Game rules                               |  <- Hot-reloadable
+|  - UI scripting                             |  <- Safe sandbox
++---------------------------------------------+
+|         Engine Core (Eiffel)                |  <- Provably correct
+|  - Memory management (controlled GC)        |  <- No memory bugs
+|  - Asset loading (SCOOP parallel)           |  <- Race-free
+|  - State machines (DBC verified)            |  <- No invalid states
+|  - Rendering pipeline                       |  <- Contract-verified
++---------------------------------------------+
+|        Platform Layer (C/SDL2)              |  <- Native performance
+|  - Graphics (OpenGL/Vulkan)                 |  <- Industry standard
+|  - Audio (WASAPI/CoreAudio)                 |  <- Cross-platform
+|  - Input (SDL2)                             |  <- Well-tested
++---------------------------------------------+
+```
+
+#### Marketing Angles for Indie Developers
+
+1. **"Write games, not memory managers"**
+   - Eiffel handles memory safely
+   - Focus on gameplay, not debugging
+
+2. **"Contracts that document themselves"**
+   - DBC preconditions explain function requirements
+   - No more "undefined behavior"
+
+3. **"Lua where you want it, safety where you need it"**
+   - Game logic in familiar Lua
+   - Engine guarantees in Eiffel
+
+4. **"Ship smaller, run faster"**
+   - Dead code elimination = tiny binaries
+   - Better cache utilization
+
+### Required Proof Points Before Marketing
+
+Before claiming Eiffel viability for indie games, we need:
+
+| Proof Point | Status | Priority |
+|-------------|--------|----------|
+| simple_lua working | NOT BUILT | CRITICAL |
+| GC benchmarks at 60fps | NOT DONE | CRITICAL |
+| Proof-of-concept game | NOT DONE | HIGH |
+| SDL2 integration | NOT BUILT | HIGH |
+| Object pooling patterns | DOCUMENTED | MEDIUM |
+| Memory management guide | NOT DONE | MEDIUM |
+
+### Benchmarking Roadmap
+
+**Week 1**: Build GC benchmarking harness
+- Measure baseline GC pause times
+- Test `collection_off` / `collection_on` behavior
+- Profile generational collector
+
+**Week 2**: Frame stability testing
+- Simulate game loop with allocations
+- Measure frame time variance
+- Compare GC on vs GC off
+
+**Week 3**: Pattern validation
+- Implement object pooling
+- Measure pool-based allocation
+- Compare against normal allocation
+
+**Week 4**: Documentation and analysis
+- Compile benchmark results
+- Write memory management guide
+- Update viability assessments
+
+### Conclusion: The Path Forward
+
+The discovery of Eiffel's extensive GC control capabilities changes the strategic picture:
+
+**Previous assumption**: Eiffel GC is uncontrollable, limiting game viability.
+
+**New reality**: Eiffel provides comprehensive GC control including:
+- Full on/off control
+- Manual deallocation via `free()`
+- Generational collector tuning
+- Incremental collection option
+- Memory threshold management
+
+**What this means for simple_lua**:
+- Indie gaming becomes a viable target market
+- The "Eiffel engine + Lua scripting" model is technically feasible
+- Benchmarking is the critical next step to prove viability
+
+**Immediate action items**:
+1. Build benchmarking harness (1 week)
+2. Measure actual GC behavior in game-like scenarios
+3. Document patterns for game memory management
+4. Build simple_lua (2 phases)
+5. Create proof-of-concept indie game
+
+The case for Eiffel in indie gaming is stronger than initially assessed, but remains theoretical until benchmarked and proven with working code.
+
+---
+
+*Research updated: December 26, 2024*
+*Added: GC control capabilities, benchmarking requirements, indie gaming case*
+*Correction: C++ has NO GC (manual memory management)*
+*Produced for: Simple Eiffel ecosystem strategic planning*
