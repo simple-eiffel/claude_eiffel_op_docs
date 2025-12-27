@@ -709,7 +709,7 @@ invariant
 end
 ```
 
-### Inline C Pattern (Eric Bezault Style)
+### Inline C Pattern (Inline C Style)
 
 For Win32 API and external C calls, use inline C - NO separate .c files:
 

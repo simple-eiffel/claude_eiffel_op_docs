@@ -62,7 +62,7 @@ All device libraries follow:
 3. **DBC** - Full preconditions, postconditions, invariants
 4. **Void Safety** - All code void-safe
 5. **SCOOP Compatible** - Concurrency-ready
-6. **Inline C** - Win32/C calls via Eric Bezault pattern
+6. **Inline C** - Win32/C calls via inline C pattern
 7. **Error Handling** - last_error query, has_error status
 
 ## Cross-Platform Strategy

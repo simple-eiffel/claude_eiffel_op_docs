@@ -45,7 +45,7 @@ Related simple_* libraries that could be leveraged:
 
 Options for implementation:
 1. **WrapC** - Eiffel wrapper generator for C libraries (could wrap BlueZ on Linux)
-2. **Inline C** - Eric Bezault pattern for Win32 API calls
+2. **Inline C** - inline C pattern for Win32 API calls
 3. **Shell out** - Execute platform tools like `bluetoothctl`
 
 ### Step 4: Developer Pain Points

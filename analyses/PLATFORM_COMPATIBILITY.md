@@ -124,7 +124,7 @@ Priority libraries for Linux/macOS support:
 
 - **Windows-First Development:** We develop on Windows (Larry's environment), so Windows support comes first
 - **SCOOP Compatibility:** All libraries are SCOOP-compatible regardless of platform
-- **Inline C Pattern:** We use Eric Bezault's inline C pattern for native code - this makes porting easier as all platform-specific code is in Eiffel files
+- **Inline C Pattern:** We use inline C pattern for native code - this makes porting easier as all platform-specific code is in Eiffel files
 - **Community Contributions:** Linux/macOS implementations welcome!
 
 ## Platform-Specific Libraries

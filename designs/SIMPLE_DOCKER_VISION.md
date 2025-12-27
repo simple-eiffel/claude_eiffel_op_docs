@@ -488,7 +488,7 @@ docker.remove_container (postgres)
 2. Then create `simple_docker` using simple_ipc for Docker Engine communication
 
 **simple_ipc Implementation Notes**:
-- Use inline C (Eric Bezault pattern) - NO external library dependencies
+- Use inline C (inline C pattern) - NO external library dependencies
 - Windows: `CreateFile`, `ReadFile`, `WriteFile` for named pipes
 - Linux/macOS: `socket()`, `connect()`, `read()`, `write()` for Unix sockets
 - Reference WEL_PIPE and UNIX_STREAM_SOCKET for API patterns only (don't depend on them)
@@ -774,7 +774,7 @@ start_container (a_container: DOCKER_CONTAINER)
 
 **NEW LIBRARY REQUIRED: `simple_ipc`**
 
-simple_docker needs a new `simple_ipc` library that provides cross-platform IPC using **inline C** (Eric Bezault pattern), NOT depending on WEL or other platform-specific libraries.
+simple_docker needs a new `simple_ipc` library that provides cross-platform IPC using **inline C** (inline C pattern), NOT depending on WEL or other platform-specific libraries.
 
 ```eiffel
 -- simple_ipc: Cross-platform IPC with inline C

@@ -13,7 +13,7 @@
 | libav* wrapper | Direct API, no subprocess, real-time capable, cross-platform | Complex C interop, memory management |
 | CLI wrapper | Simple, stable | Subprocess overhead, parsing output |
 
-C library approach provides maximum performance and enables real-time streaming. Uses Eric Bezault inline C pattern.
+C library approach provides maximum performance and enables real-time streaming. Uses inline C pattern.
 
 ## Architecture
 

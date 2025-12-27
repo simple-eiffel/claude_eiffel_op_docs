@@ -23,7 +23,7 @@ This plan delivers **simple_docker** - a programmatic Docker container managemen
 
 ### Overview
 
-Cross-platform IPC using inline C (Eric Bezault pattern). NO dependency on WEL (Windows-only).
+Cross-platform IPC using inline C (inline C pattern). NO dependency on WEL (Windows-only).
 
 **Note:** simple_ipc already exists at `D:\prod\simple_ipc` with Windows implementation. This plan restructures it for cross-platform support.
 

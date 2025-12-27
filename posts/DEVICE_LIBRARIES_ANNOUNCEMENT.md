@@ -4,7 +4,7 @@ I'm pleased to announce three new libraries bringing hardware and multimedia cap
 
 ## Why Device Libraries?
 
-Eiffel has always excelled at correctness and reliability. Now it can talk to your hardware with the same Design by Contract rigor. These libraries follow the Simple Eiffel patterns: facade classes, fluent APIs, inline C (Eric Bezault pattern), and comprehensive contracts.
+Eiffel has always excelled at correctness and reliability. Now it can talk to your hardware with the same Design by Contract rigor. These libraries follow the Simple Eiffel patterns: facade classes, fluent APIs, inline C (inline C pattern), and comprehensive contracts.
 
 ## simple_ffmpeg - Multimedia Processing
 

@@ -139,7 +139,7 @@ The OUTPUT panel should show `simple_lsp v0.8.1 connected` when the extension ac
 
 ## Acknowledgments
 
-Thanks to Eric Bezault for testing and feedback on the ecosystem. The inline C pattern used throughout the simple_* libraries is based on his techniques.
+Thanks to Eric Bezault for testing and feedback on the ecosystem. The inline C pattern is used throughout the simple_* libraries.
 
 ---
 

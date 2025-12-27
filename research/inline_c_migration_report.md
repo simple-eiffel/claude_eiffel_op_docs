@@ -1,7 +1,7 @@
 # Inline C Migration Report
 
 **Date:** December 8, 2025
-**Context:** Following Eric Bezault's recommendation to inline C code into Eiffel classes
+**Context:** Inlining C code into Eiffel classes
 
 ---
 

@@ -352,7 +352,7 @@ These are PATTERN studies, not simple how-to guides - they identify architectura
 
 | # | Study Name | Focus | Example Sources | Est. FAQs |
 |---|-----------|-------|-----------------|-----------|
-| I1 | Inline C Pattern | Eric Bezault style | simple_* externals | 12 |
+| I1 | Inline C Pattern | inline C style | simple_* externals | 12 |
 | I2 | Platform Abstraction | OS-independent | simple_file, simple_process | 10 |
 | I3 | Memory Management | C pointer handling | WEL, vision2 | 10 |
 
