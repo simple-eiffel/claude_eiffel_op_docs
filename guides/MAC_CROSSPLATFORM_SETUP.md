@@ -8,22 +8,22 @@ Reference for setting up the Mac Mini for Simple Eiffel cross-platform developme
 
 1. Connect both computers to the same ethernet switch/hub
 2. Both will get IPs on the same subnet (likely 192.168.1.x)
-3. Mac IP observed: 192.168.1.112
+3. Mac IP observed: 192.168.1.x
 4. No special configuration needed - plug and play
 
 ### Quick Test (from Windows)
 
 ```bash
-ping 192.168.1.112
+ping 192.168.1.x
 ```
 
 ### File Sharing Options (fastest to slowest)
 
 | Method | Speed | Setup |
 |--------|-------|-------|
-| SMB/CIFS | ~100MB/s on gigabit | Mac: System Preferences → Sharing → File Sharing. Windows: `\\192.168.1.112` in Explorer |
+| SMB/CIFS | ~100MB/s on gigabit | Mac: System Preferences → Sharing → File Sharing. Windows: `\\192.168.1.x` in Explorer |
 | SCP/SFTP | ~80MB/s | Mac already has SSH. Use WinSCP or `scp` from Git Bash |
-| rsync | ~80MB/s + delta sync | Best for syncing repos: `rsync -avz /d/prod/ user@192.168.1.112:~/simple_eiffel/` |
+| rsync | ~80MB/s + delta sync | Best for syncing repos: `rsync -avz /d/prod/ user@192.168.1.x:~/simple_eiffel/` |
 
 ### Recommendation
 
@@ -142,7 +142,7 @@ gcc --version  # Should show Apple clang
 
 ## Status
 
-- [x] Mac Mini identified (192.168.1.112)
+- [x] Mac Mini identified (192.168.1.x)
 - [x] Clone script created and run
 - [x] Xcode Command Line Tools installing
 - [ ] Ethernet hub connection (pending hardware)

@@ -90,7 +90,7 @@ This guide covers deploying an Eiffel web application (like simple_showcase) to 
 ### 3.3 Note Instance Details
 
 After creation, record:
-- **Public IP**: e.g., `141.148.86.105`
+- **Public IP**: e.g., `your-server`
 - **Private IP**: e.g., `10.0.0.123`
 - **Username**: `opc` (default for Oracle Linux)
 
@@ -101,7 +101,7 @@ After creation, record:
 ### 4.1 Connect via SSH
 
 ```bash
-ssh -i ~/.ssh/oracle_eiffel opc@141.148.86.105
+ssh -i ~/.ssh/oracle_eiffel opc@your-server
 ```
 
 ### 4.2 Update System
@@ -179,19 +179,19 @@ Or compile directly on the Oracle instance (slower but works).
 
 ```bash
 # From local machine
-scp -i ~/.ssh/oracle_eiffel ./simple_showcase opc@141.148.86.105:/opt/eiffel-app/
+scp -i ~/.ssh/oracle_eiffel ./simple_showcase opc@your-server:/opt/eiffel-app/
 
 # Transfer static files
-scp -i ~/.ssh/oracle_eiffel -r ./www opc@141.148.86.105:/opt/eiffel-app/
+scp -i ~/.ssh/oracle_eiffel -r ./www opc@your-server:/opt/eiffel-app/
 
 # Transfer config
-scp -i ~/.ssh/oracle_eiffel ./config.production.json opc@141.148.86.105:/opt/eiffel-app/config.json
+scp -i ~/.ssh/oracle_eiffel ./config.production.json opc@your-server:/opt/eiffel-app/config.json
 ```
 
 ### 5.4 Set Permissions
 
 ```bash
-ssh -i ~/.ssh/oracle_eiffel opc@141.148.86.105
+ssh -i ~/.ssh/oracle_eiffel opc@your-server
 
 cd /opt/eiffel-app
 chmod +x simple_showcase
@@ -389,10 +389,10 @@ sudo systemctl restart eiffel-app
 sudo systemctl stop eiffel-app
 
 # Upload new binary
-scp -i ~/.ssh/oracle_eiffel ./simple_showcase opc@141.148.86.105:/opt/eiffel-app/
+scp -i ~/.ssh/oracle_eiffel ./simple_showcase opc@your-server:/opt/eiffel-app/
 
 # Set permissions
-ssh -i ~/.ssh/oracle_eiffel opc@141.148.86.105 "chmod +x /opt/eiffel-app/simple_showcase"
+ssh -i ~/.ssh/oracle_eiffel opc@your-server "chmod +x /opt/eiffel-app/simple_showcase"
 
 # Start service
 sudo systemctl start eiffel-app
