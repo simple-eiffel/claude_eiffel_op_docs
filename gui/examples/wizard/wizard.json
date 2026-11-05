@@ -1,0 +1,98 @@
+{
+  "app": {
+    "name": "wizard_example",
+    "title": "Multi-Step Wizard",
+    "version": "1.0.0",
+    "description": "Onboarding wizard with step navigation"
+  },
+  "windows": [
+    {
+      "id": "wizard_window",
+      "type": "window",
+      "title": "Setup Wizard",
+      "size": { "width": 600, "height": 500 },
+      "state_machine": "wizard_flow",
+      "layout": {
+        "type": "vertical",
+        "padding": 20,
+        "spacing": 15,
+        "children": [
+          {
+            "type": "text",
+            "id": "step_title",
+            "content": "Step 1: Personal Info",
+            "font_size": 18,
+            "font_weight": "bold"
+          },
+          {
+            "type": "progress",
+            "value": 33,
+            "max": 100,
+            "label": "Step 1 of 3"
+          },
+          {
+            "type": "card",
+            "id": "step_content",
+            "children": [
+              {
+                "type": "column",
+                "spacing": 10,
+                "children": [
+                  {
+                    "type": "column",
+                    "spacing": 5,
+                    "children": [
+                      { "type": "text", "content": "Full Name", "font_size": 12 },
+                      { "type": "text_field", "id": "full_name", "placeholder": "John Doe" }
+                    ]
+                  },
+                  {
+                    "type": "column",
+                    "spacing": 5,
+                    "children": [
+                      { "type": "text", "content": "Email", "font_size": 12 },
+                      { "type": "email_field", "id": "email", "placeholder": "john@example.com" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "spacing": 10,
+            "children": [
+              { "type": "button", "id": "back_btn", "label": "Back", "visible_when": "not_on_first_step" },
+              { "type": "spacer" },
+              { "type": "button", "id": "next_btn", "label": "Next", "style": "primary", "enabled_when": "step_valid" },
+              { "type": "button", "id": "cancel_btn", "label": "Cancel" }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "state_machines": [
+    {
+      "id": "wizard_flow",
+      "initial_state": "step1",
+      "states": [
+        { "id": "step1", "type": "initial", "description": "Personal info", "entry_action": "show_step_1" },
+        { "id": "step2", "description": "Account setup", "entry_action": "show_step_2" },
+        { "id": "step3", "description": "Preferences", "entry_action": "show_step_3" },
+        { "id": "complete", "type": "final", "description": "Setup complete", "entry_action": "show_summary" },
+        { "id": "cancelled", "type": "final", "description": "Setup cancelled" }
+      ],
+      "transitions": [
+        { "from": "step1", "event": "next", "to": "step2", "guard": "step1_valid" },
+        { "from": "step2", "event": "back", "to": "step1" },
+        { "from": "step2", "event": "next", "to": "step3", "guard": "step2_valid" },
+        { "from": "step3", "event": "back", "to": "step2" },
+        { "from": "step3", "event": "finish", "to": "complete", "guard": "step3_valid" },
+        { "from": "step1", "event": "cancel", "to": "cancelled" },
+        { "from": "step2", "event": "cancel", "to": "cancelled" },
+        { "from": "step3", "event": "cancel", "to": "cancelled" }
+      ]
+    }
+  ]
+}

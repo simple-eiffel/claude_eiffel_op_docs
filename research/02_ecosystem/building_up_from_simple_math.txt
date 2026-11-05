@@ -1,0 +1,284 @@
+﻿Great question. Let me map the full simple_ ecosystem* and how they all fit together:
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │                    SIMPLE ECOSYSTEM ARCHITECTURE                     │
+  ├──────────────────────────────────────────────────────────────────────┤
+  │                                                                      │
+  │  FOUNDATION LAYER:                                                   │
+  │  ├─ simple_math          (scalars, transcendental functions)         │
+  │  └─ simple_random        (random number generation)                  │
+  │                                                                      │
+  │  PROBABILISTIC LAYER:                                                │
+  │  ├─ simple_probability   (distributions: normal, uniform, etc.)      │
+  │  ├─ simple_statistics    (mean, variance, correlation, etc.)         │
+  │  └─ simple_montecarlo    (sampling, stochastic integration)          │
+  │                                                                      │
+  │  COMPUTATIONAL LAYER:                                                │
+  │  ├─ simple_calculus      (∂, ∫ - can delegate to MC)                 │
+  │  └─ simple_linalg        (vectors, matrices, decompositions)         │
+  │                                                                      │
+  │  PHYSICS & OPTIMIZATION LAYER:                                       │
+  │  ├─ simple_physics       (F=ma, wave, Maxwell equations)             │
+  │  ├─ simple_ode           (ODE solvers for differential equations)    │
+  │  ├─ simple_optimization  (gradient descent, Newton-Raphson)          │
+  │  └─ simple_special       (Bessel, Hermite, special functions)        │
+  │                                                                      │
+  │  APPLICATION LAYER:                                                  │
+  │  ├─ simple_chart         (visualization)                             │
+  │  ├─ simple_json          (data serialization)                        │
+  │  ├─ simple_http          (networking)                                │
+  │  └─ ...others            (I/O, UI, etc.)                             │
+  │                                                                      │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  Key Dependencies & Flows
+
+  Deterministic Physics Path:
+  simple_math → simple_calculus → simple_linalg → simple_physics
+                   ↓               ↓
+                Derivatives      Jacobians
+                Integrals        Linear systems
+                (Newton's)       (Eigenvalues)
+
+  Stochastic Physics Path:
+  simple_random → simple_probability → simple_montecarlo
+                         ↓                   ↓
+                    Distributions        MC Integration
+                    (Normal, etc.)       MC Sampling
+                                              ↓
+                                        simple_physics
+                                     (Brownian motion,
+                                      uncertainty quant.)
+
+  Hybrid Physics Path:
+                      ┌─────────────────┐
+                      │ simple_physics  │
+                      └────────┬────────┘
+                      ┌────────┴────────┐
+                      ↓                 ↓
+              Deterministic      Stochastic
+              ├─ Calculus        ├─ Probability
+              ├─ Linalg          └─ Montecarlo
+              └─ ODE Solvers
+
+  How simple_probability & simple_montecarlo Fit In
+
+  simple_probability:
+  - Foundational: provides distributions (Normal, Uniform, Exponential, etc.)
+  - Used by: simple_montecarlo, simple_statistics, simple_physics
+  - Independent: doesn't depend on calculus or linalg
+
+  simple_montecarlo:
+  - Depends on: simple_probability (for sampling), simple_random
+  - Provides: stochastic integration, particle methods, ensemble sampling
+  - Compatible with simple_calculus: both solve ∫f(x)dx
+  -- User chooses method:
+  integral_deterministic := calc.integrate (agent f, 0.0, 1.0)
+  integral_stochastic := montecarlo.integrate (agent f, 0.0, 1.0, n_samples)
+  -- Same answer, different approach
+
+  simple_physics Orchestrates All Layers
+
+  -- Deterministic Newton-Raphson (uses calculus + linalg)
+  solution := physics.newton_raphson (
+      agent nonlinear_f,
+      initial_guess
+  )
+  -- Internally: Jacobian via calculus, LU solve via linalg
+
+  -- Stochastic particle simulation (uses probability + montecarlo)
+  particles := physics.simulate_brownian_motion (
+      initial_positions,
+      temperature,
+      time_steps
+  )
+  -- Internally: samples from probability distributions, MC integration
+
+  -- Hybrid uncertainty quantification (uses both)
+  ensemble := physics.ensemble_simulation (
+      deterministic_model,    -- uses calculus + linalg
+      parameter_distribution  -- uses probability + montecarlo
+  )
+
+  Future Libraries Building on These
+
+  simple_ode (ODE solver):
+  depends on: simple_calculus, simple_linalg
+  provides: dy/dt = f(y,t) solutions
+
+  simple_optimization (gradient descent, etc.):
+  depends on: simple_calculus, simple_linalg
+  provides: minimize/maximize functions
+
+  simple_special (special functions):
+  depends on: simple_math, simple_calculus
+  provides: Bessel, Hermite, Legendre functions
+
+  ---
+  Complete Ecosystem Map
+
+  THREE INDEPENDENT PILLARS:
+
+  Pillar 1: DETERMINISTIC
+    math → calculus → linalg → physics
+
+  Pillar 2: STOCHASTIC
+    random → probability → montecarlo → physics
+
+  Pillar 3: HYBRID
+    Both pillars combined for uncertainty
+
+  WITH SPECIALIZED TOOLS:
+    ODE solvers, optimization, special functions
+
+  AND UTILITIES:
+    I/O, visualization, networking
+
+  ---
+  Should We Create simple_physics Research Now?
+
+  Given this full picture, simple_physics should:
+
+  ✅ Coordinate deterministic + stochastic approaches
+  ✅ Depend on both calculus AND linalg (not one or the other)
+  ✅ Depend on montecarlo + probability for stochastic solvers
+  ✅ Know about simple_ode, simple_optimization for advanced use cases
+  ✅ Design APIs where users don't care about the layer details
+
+--------- plain/simple order of ops ------------
+
+Simple Build Order for simple_* Ecosystem
+
+  Phase 1: Foundation (No Dependencies)
+  1. simple_math ✅ (already exists)
+  2. simple_random ✅ (already exists)
+
+  Phase 2: Deterministic Computation (Depend on Phase 1)
+  3. simple_calculus ✅ (skeleton created, ready for eiffel.)
+  4. simple_linalg ✅ (skeleton created, ready for eiffel.)
+
+  Phase 3: Probabilistic (Depend on Phase 1)
+  5. simple_probability ✅ (already exists)
+  6. simple_montecarlo ✅ (already exists)
+
+  Phase 4: Physics & Solvers (Depend on Phases 2-3)
+  7. simple_physics (NEW - create research → eiffel.* workflow)
+  - depends on: simple_calculus, simple_linalg, simple_probability, simple_montecarlo
+
+  8. simple_ode (NEW - create research → eiffel.* workflow)
+    - depends on: simple_calculus, simple_linalg
+  9. simple_optimization (NEW - create research → eiffel.* workflow)
+    - depends on: simple_calculus, simple_linalg
+
+  Phase 5: Specialized (Depend on Phase 1-4)
+  10. simple_special (NEW - create research → eiffel.* workflow)
+      - depends on: simple_math, simple_calculus
+
+  ---
+  Integration Order
+
+  Now:
+  /eiffel.intent simple_calculus
+  /eiffel.intent simple_linalg
+  /eiffel.contracts simple_calculus
+  /eiffel.contracts simple_linalg
+  ... (full workflow for both)
+
+  Then (after calculus & linalg are complete):
+  /eiffel.intent simple_physics
+  /eiffel.contracts simple_physics
+  ... (full workflow)
+
+  Then (in parallel):
+  /eiffel.intent simple_ode
+  /eiffel.intent simple_optimization
+  /eiffel.intent simple_special
+  ... (all three in parallel, each through full workflow)
+
+  ---
+  Complete Ecosystem at End
+
+  simple_math (foundation)
+      ↓
+      ├─→ simple_calculus ───────────────────┐
+      │                                      ├─→ simple_physics
+      ├─→ simple_linalg ─────────────────────┤
+      │                                      ├─→ simple_ode
+      ├─→ simple_probability                 ├─→ simple_optimization
+      │                                      │        │
+      └─→ simple_random → simple_montecarlo ─┘        │
+                     ↓                                ↓
+                    simple_special (standalone, optional)
+
+  Total new libraries to create: 4 (calculus, linalg, physics, ode, optimization, special = 6, but calculus+linalg done, so 4 to go)
+
+  Ready to start building?
+
+  ═══════════════════════════════════════════════════════════════════════════════
+                      EIFFEL SPEC KIT - COMPLETE SKILLS TABLE
+                           (with Phase 8 Post-Ship QA)
+  ═══════════════════════════════════════════════════════════════════════════════
+
+  ┌───────┬──────────────────────┬──────────────────────────────┬────────────────────┬──────────────────────────┐
+  │ Phase │       Skill          │           Purpose            │       Input        │          Output          │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ Pre-0 │ /eiffel.research     │ Deep investigation (7-step)  │ Vague idea         │ research/*.md            │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ Pre-1 │ /eiffel.spec         │ Transform research → design  │ research/*.md      │ spec/*.md                │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 0     │ /eiffel.intent       │ Capture WHAT + WHY           │ spec (or research) │ intent-v2.md             │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 1     │ /eiffel.contracts    │ Class skeletons + contracts  │ intent-v2.md       │ src/*.e (stubs)          │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 2     │ /eiffel.review       │ Adversarial AI review        │ contracts          │ approach.md, synopsis.md │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 3     │ /eiffel.tasks        │ Break into tasks             │ synopsis.md        │ tasks.md                 │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 4     │ /eiffel.implement    │ Write feature bodies         │ tasks.md           │ src/*.e (complete)       │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 5     │ /eiffel.verify       │ Generate + run tests         │ src/*.e            │ test/*.e, all passing    │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 6     │ /eiffel.harden       │ Stress test + adversarial    │ tests              │ phase6-tests.txt, pass   │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 7     │ /eiffel.ship         │ Production release           │ hardened code      │ v1.0.0, docs site        │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 8     │ /eiffel.post-ship    │ POST-SHIP QA GATE (master)   │ shipped library    │ qa-report.txt            │
+  │       │ (integrated)         │ Runs all sub-checks below    │                    │                          │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 8.1   │ /eiffel.stub-detect  │ Check for unimplemented code │ src/ + test/       │ stubs-report.txt         │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 8.2   │ /eiffel.test-detect  │ Verify all tests reachable   │ test/*.e + runner  │ test-coverage.txt        │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 8.3   │ /eiffel.test-qa      │ Verify test infrastructure   │ test/*.e + ECF     │ test-infra-report.txt    │
+  ├───────┼──────────────────────┼──────────────────────────────┼────────────────────┼──────────────────────────┤
+  │ 8.4   │ /eiffel.skill-review │ Verify all phases complete   │ entire library     │ skill-completeness.txt   │
+  └───────┴──────────────────────┴──────────────────────────────┴────────────────────┴──────────────────────────┘
+
+  ═══════════════════════════════════════════════════════════════════════════════
+                                USAGE EXAMPLES
+  ═══════════════════════════════════════════════════════════════════════════════
+
+  Standard Workflow (Phases 0-7):
+    /eiffel.research simple_physics
+    /eiffel.spec
+    /eiffel.intent
+    /eiffel.contracts
+    /eiffel.review
+    /eiffel.tasks
+    /eiffel.implement
+    /eiffel.verify
+    /eiffel.harden
+    /eiffel.ship
+
+  Post-Ship QA (Phase 8):
+    /eiffel.post-ship /d/prod/simple_physics
+    /eiffel.post-ship /d/prod/simple_ode --strict
+    /eiffel.post-ship /d/prod/simple_optimization --report
+
+  Individual QA Checks:
+    /eiffel.stub-detect /d/prod/simple_physics
+    /eiffel.test-detect /d/prod/simple_physics
+    /eiffel.test-qa /d/prod/simple_physics
+    /eiffel.skill-review /d/prod/simple_physics
+
+  ═══════════════════════════════════════════════════════════════════════════════

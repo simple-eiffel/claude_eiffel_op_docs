@@ -1,0 +1,102 @@
+{
+  "app": {
+    "name": "settings_example",
+    "title": "Settings Panel",
+    "version": "1.0.0",
+    "description": "Nested panels with save/cancel/reset"
+  },
+  "windows": [
+    {
+      "id": "settings_window",
+      "type": "window",
+      "title": "Settings",
+      "size": { "width": 700, "height": 600 },
+      "layout": {
+        "type": "row",
+        "spacing": 10,
+        "padding": 10,
+        "children": [
+          {
+            "type": "column",
+            "width": 150,
+            "children": [
+              { "type": "text", "content": "Settings", "font_weight": "bold" },
+              {
+                "type": "list",
+                "id": "settings_menu",
+                "items": [
+                  { "id": "general", "label": "General" },
+                  { "id": "appearance", "label": "Appearance" },
+                  { "id": "notifications", "label": "Notifications" },
+                  { "id": "advanced", "label": "Advanced" }
+                ],
+                "multi_select": false
+              }
+            ]
+          },
+          {
+            "type": "column",
+            "grow": true,
+            "spacing": 10,
+            "children": [
+              {
+                "type": "text",
+                "id": "section_title",
+                "content": "General Settings",
+                "font_size": 18,
+                "font_weight": "bold"
+              },
+              {
+                "type": "card",
+                "id": "settings_panel",
+                "children": [
+                  {
+                    "type": "column",
+                    "spacing": 15,
+                    "children": [
+                      {
+                        "type": "column",
+                        "spacing": 5,
+                        "children": [
+                          { "type": "text", "content": "Language", "font_size": 12 },
+                          { "type": "dropdown", "id": "language_select", "options": [
+                            { "id": "en", "label": "English" },
+                            { "id": "es", "label": "Spanish" },
+                            { "id": "fr", "label": "French" }
+                          ] }
+                        ]
+                      },
+                      {
+                        "type": "column",
+                        "spacing": 5,
+                        "children": [
+                          { "type": "text", "content": "Theme", "font_size": 12 },
+                          { "type": "dropdown", "id": "theme_select", "options": [
+                            { "id": "light", "label": "Light" },
+                            { "id": "dark", "label": "Dark" },
+                            { "id": "auto", "label": "Auto" }
+                          ] }
+                        ]
+                      },
+                      { "type": "checkbox", "id": "startup_check", "label": "Launch on startup" },
+                      { "type": "checkbox", "id": "updates_check", "label": "Check for updates" }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "row",
+                "spacing": 10,
+                "children": [
+                  { "type": "button", "id": "save_btn", "label": "Save", "style": "primary", "enabled_when": "settings_changed" },
+                  { "type": "button", "id": "reset_btn", "label": "Reset", "enabled_when": "settings_changed" },
+                  { "type": "button", "id": "cancel_btn", "label": "Cancel", "enabled_when": "settings_changed" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

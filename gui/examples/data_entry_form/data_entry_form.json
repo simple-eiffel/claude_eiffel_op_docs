@@ -1,0 +1,141 @@
+{
+  "app": {
+    "name": "data_entry_form_example",
+    "title": "Data Entry Form",
+    "version": "1.0.0",
+    "description": "Complex form with multi-field validation"
+  },
+  "windows": [
+    {
+      "id": "form_window",
+      "type": "window",
+      "title": "Registration Form",
+      "size": { "width": 500, "height": 600 },
+      "layout": {
+        "type": "vertical",
+        "padding": 20,
+        "spacing": 15,
+        "children": [
+          {
+            "type": "text",
+            "content": "Registration",
+            "font_size": 20,
+            "font_weight": "bold"
+          },
+          {
+            "type": "column",
+            "spacing": 5,
+            "children": [
+              { "type": "text", "content": "Email", "font_size": 12 },
+              {
+                "type": "email_field",
+                "id": "email_field",
+                "placeholder": "user@example.com",
+                "validation": [
+                  { "rule": "required", "message": "Email required" },
+                  { "rule": "email", "message": "Invalid email format" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "column",
+            "spacing": 5,
+            "children": [
+              { "type": "text", "content": "Password", "font_size": 12 },
+              {
+                "type": "password_field",
+                "id": "password_field",
+                "placeholder": "Min 8 characters",
+                "validation": [
+                  { "rule": "required", "message": "Password required" },
+                  { "rule": "min_length", "value": 8, "message": "At least 8 characters" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "column",
+            "spacing": 5,
+            "children": [
+              { "type": "text", "content": "Confirm Password", "font_size": 12 },
+              {
+                "type": "password_field",
+                "id": "password_confirm_field",
+                "placeholder": "Confirm password",
+                "validation": [
+                  { "rule": "required", "message": "Confirm password" },
+                  { "rule": "custom", "handler": "passwords_match", "message": "Passwords do not match" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "column",
+            "spacing": 5,
+            "children": [
+              { "type": "text", "content": "Age", "font_size": 12 },
+              {
+                "type": "spin_box",
+                "id": "age_field",
+                "min": 18,
+                "max": 120,
+                "value": 18,
+                "validation": [
+                  { "rule": "required", "message": "Age required" },
+                  { "rule": "range", "min": 18, "max": 120, "message": "Must be 18 or older" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "column",
+            "spacing": 5,
+            "children": [
+              { "type": "text", "content": "Country", "font_size": 12 },
+              {
+                "type": "dropdown",
+                "id": "country_field",
+                "options": [
+                  { "id": "us", "label": "United States" },
+                  { "id": "ca", "label": "Canada" },
+                  { "id": "uk", "label": "United Kingdom" }
+                ],
+                "validation": [
+                  { "rule": "required", "message": "Country required" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "checkbox",
+            "id": "terms_checkbox",
+            "label": "I agree to the terms and conditions",
+            "validation": [
+              { "rule": "required", "message": "You must agree to terms" }
+            ]
+          },
+          {
+            "type": "row",
+            "spacing": 10,
+            "children": [
+              {
+                "type": "button",
+                "id": "submit_button",
+                "label": "Register",
+                "style": "primary",
+                "enabled_when": "form_valid"
+              },
+              { "type": "spacer" },
+              {
+                "type": "button",
+                "id": "cancel_button",
+                "label": "Cancel"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

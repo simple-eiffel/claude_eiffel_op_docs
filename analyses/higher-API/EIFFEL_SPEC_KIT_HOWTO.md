@@ -32,6 +32,8 @@
 
 ## Phase 0: Intent Capture
 
+**See:** `/d/prod/reference_docs/briefings/BUILD_STANDARDS.md` § 1 (Library Selection)
+
 ### Command
 ```
 /eiffel.intent d:\prod\proven_fetch
@@ -385,6 +387,8 @@ Next: Run /eiffel.verify d:\prod\proven_fetch
 
 ## Phase 5: Test Generation + Verification
 
+**See:** `/d/prod/reference_docs/briefings/BUILD_STANDARDS.md` § 2,3 (F_code finalize, binary placement)
+
 ### Command
 ```
 /eiffel.verify d:\prod\proven_fetch
@@ -496,6 +500,8 @@ Next: Run /eiffel.ship d:\prod\proven_fetch
 
 ## Phase 7: Ship Checklist
 
+**See:** `/d/prod/reference_docs/briefings/BUILD_STANDARDS.md` § 1,2,3,4 (All standards apply)
+
 ### Command
 ```
 /eiffel.ship d:\prod\proven_fetch
@@ -516,10 +522,17 @@ Next: Run /eiffel.ship d:\prod\proven_fetch
 - [ ] All public features have header comments
 
 **Ecosystem Integration:**
-- [ ] ECF references correct simple_* dependencies
-- [ ] No ISE stdlib where simple_* exists
+- [ ] ECF references correct simple_* dependencies (§ 1 BUILD_STANDARDS)
+- [ ] No ISE stdlib where simple_* exists (§ 1 BUILD_STANDARDS)
 - [ ] SCOOP compatible (concurrency=scoop)
 - [ ] Void safety enabled (void_safety=all)
+
+**Build & Deployment (§ 2,3,4 BUILD_STANDARDS):**
+- [ ] Test binary compiled: `ec.sh -finalize -keep` (§ 2)
+- [ ] Binary location: `bin/test_app.exe` (§ 3)
+- [ ] Supporting DLLs co-located in `bin/` (§ 3)
+- [ ] Data organization: `data/{input,output,expected}/` (§ 4)
+- [ ] Test report exists: `reports/TEST_SUITE_REPORT.md` (§ 4)
 
 **Final Verification:**
 ```bash

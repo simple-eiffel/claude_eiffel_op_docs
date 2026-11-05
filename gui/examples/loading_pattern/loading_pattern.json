@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "loading_pattern_example",
+    "title": "Loading Pattern",
+    "version": "1.0.0",
+    "description": "Async data fetching with multiple states"
+  },
+  "windows": [
+    {
+      "id": "data_window",
+      "type": "window",
+      "title": "Data Viewer",
+      "size": { "width": 600, "height": 500 },
+      "state_machine": "loading_flow",
+      "layout": {
+        "type": "vertical",
+        "padding": 20,
+        "spacing": 15,
+        "children": [
+          {
+            "type": "row",
+            "spacing": 10,
+            "children": [
+              { "type": "text", "content": "Data", "font_size": 18, "font_weight": "bold" },
+              { "type": "spacer" },
+              { "type": "button", "id": "refresh_btn", "label": "Refresh", "enabled_when": "not_loading" }
+            ]
+          },
+          {
+            "type": "card",
+            "id": "idle_panel",
+            "visible_when": "in_idle_state",
+            "children": [
+              { "type": "text", "content": "No data loaded. Click Refresh to load." }
+            ]
+          },
+          {
+            "type": "card",
+            "id": "loading_panel",
+            "visible_when": "in_loading_state",
+            "children": [
+              { "type": "progress", "indeterminate": true, "label": "Loading..." }
+            ]
+          },
+          {
+            "type": "card",
+            "id": "loaded_panel",
+            "visible_when": "in_loaded_state",
+            "children": [
+              {
+                "type": "column",
+                "spacing": 10,
+                "children": [
+                  {
+                    "type": "data_grid",
+                    "id": "data_grid",
+                    "columns": [
+                      { "id": "id", "label": "ID", "width": 50 },
+                      { "id": "name", "label": "Name", "width": 200 },
+                      { "id": "value", "label": "Value", "width": 150 }
+                    ],
+                    "sortable": true
+                  },
+                  {
+                    "type": "text",
+                    "id": "record_count",
+                    "content": "Loaded 100 records"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "id": "error_panel",
+            "title": "Error",
+            "visible_when": "in_error_state",
+            "children": [
+              {
+                "type": "column",
+                "spacing": 10,
+                "children": [
+                  { "type": "text", "id": "error_message", "content": "Failed to load data: Connection timeout" },
+                  {
+                    "type": "row",
+                    "spacing": 10,
+                    "children": [
+                      { "type": "button", "id": "retry_btn", "label": "Retry", "style": "primary" },
+                      { "type": "button", "id": "dismiss_btn", "label": "Dismiss" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "state_machines": [
+    {
+      "id": "loading_flow",
+      "initial_state": "idle",
+      "states": [
+        { "id": "idle", "type": "initial", "description": "No data loaded yet" },
+        { "id": "loading", "description": "Fetching data", "entry_action": "start_loading" },
+        { "id": "loaded", "description": "Data available", "entry_action": "display_data" },
+        { "id": "error", "description": "Load failed", "entry_action": "show_error" },
+        { "id": "refreshing", "description": "Reloading data", "entry_action": "start_loading" }
+      ],
+      "transitions": [
+        { "from": "idle", "event": "refresh", "to": "loading" },
+        { "from": "loading", "event": "success", "to": "loaded" },
+        { "from": "loading", "event": "error", "to": "error" },
+        { "from": "loaded", "event": "refresh", "to": "refreshing" },
+        { "from": "refreshing", "event": "success", "to": "loaded" },
+        { "from": "refreshing", "event": "error", "to": "error" },
+        { "from": "error", "event": "retry", "to": "loading" },
+        { "from": "error", "event": "dismiss", "to": "idle" }
+      ]
+    }
+  ]
+}

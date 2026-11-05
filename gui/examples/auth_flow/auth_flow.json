@@ -1,0 +1,174 @@
+{
+  "app": {
+    "name": "auth_flow_example",
+    "title": "Authentication Flow",
+    "version": "1.0.0",
+    "description": "Login with error recovery and loading states"
+  },
+  "windows": [
+    {
+      "id": "login_window",
+      "type": "window",
+      "title": "Login",
+      "size": { "width": 400, "height": 320 },
+      "resizable": false,
+      "state_machine": "auth_flow",
+      "layout": {
+        "type": "vertical",
+        "padding": 20,
+        "spacing": 15,
+        "children": [
+          {
+            "type": "text",
+            "content": "Sign In",
+            "font_size": 24,
+            "font_weight": "bold",
+            "text_align": "center"
+          },
+          {
+            "type": "column",
+            "spacing": 10,
+            "children": [
+              {
+                "type": "text",
+                "content": "Username",
+                "font_size": 12
+              },
+              {
+                "type": "text_field",
+                "id": "username_field",
+                "placeholder": "Enter username",
+                "max_length": 50
+              }
+            ]
+          },
+          {
+            "type": "column",
+            "spacing": 10,
+            "children": [
+              {
+                "type": "text",
+                "content": "Password",
+                "font_size": 12
+              },
+              {
+                "type": "password_field",
+                "id": "password_field",
+                "placeholder": "Enter password",
+                "min_length": 6
+              }
+            ]
+          },
+          {
+            "type": "card",
+            "id": "error_panel",
+            "title": "Error",
+            "visible_when": "in_error_state",
+            "children": [
+              {
+                "type": "text",
+                "id": "error_message",
+                "content": "Invalid username or password"
+              }
+            ]
+          },
+          {
+            "type": "progress",
+            "id": "loading_spinner",
+            "indeterminate": true,
+            "label": "Authenticating...",
+            "visible_when": "in_loading_state"
+          },
+          {
+            "type": "row",
+            "spacing": 10,
+            "children": [
+              {
+                "type": "button",
+                "id": "login_button",
+                "label": "Sign In",
+                "style": "primary",
+                "enabled_when": "username_not_empty AND password_not_empty AND not in_loading_state"
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "button",
+                "id": "cancel_button",
+                "label": "Cancel"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "state_machines": [
+    {
+      "id": "auth_flow",
+      "initial_state": "logged_out",
+      "states": [
+        {
+          "id": "logged_out",
+          "type": "initial",
+          "description": "User not authenticated, login form visible"
+        },
+        {
+          "id": "authenticating",
+          "description": "Authenticating user credentials",
+          "entry_action": "show_spinner",
+          "exit_action": "hide_spinner"
+        },
+        {
+          "id": "authenticated",
+          "type": "final",
+          "description": "User successfully logged in",
+          "entry_action": "close_window"
+        },
+        {
+          "id": "auth_error",
+          "description": "Authentication failed, show error message",
+          "entry_action": "show_error_message"
+        }
+      ],
+      "transitions": [
+        {
+          "id": "login_attempt",
+          "from": "logged_out",
+          "event": "login",
+          "to": "authenticating",
+          "guard": "username_not_empty AND password_not_empty"
+        },
+        {
+          "id": "login_success",
+          "from": "authenticating",
+          "event": "success",
+          "to": "authenticated",
+          "action": "save_session"
+        },
+        {
+          "id": "login_failure",
+          "from": "authenticating",
+          "event": "failure",
+          "to": "auth_error",
+          "action": "log_failed_attempt"
+        },
+        {
+          "id": "retry_login",
+          "from": "auth_error",
+          "event": "retry",
+          "to": "logged_out",
+          "action": "clear_error_message"
+        },
+        {
+          "id": "cancel_login",
+          "from": "logged_out",
+          "event": "cancel",
+          "to": "authenticated",
+          "action": "cleanup"
+        }
+      ]
+    }
+  ]
+}

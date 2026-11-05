@@ -1,0 +1,151 @@
+{
+  "app": {
+    "name": "dashboard_example",
+    "title": "Dashboard",
+    "version": "1.0.0",
+    "description": "Complex layout with tabs, cards, data grids, and responsive grid"
+  },
+  "windows": [
+    {
+      "id": "dashboard_window",
+      "type": "window",
+      "title": "Dashboard",
+      "size": { "width": 1200, "height": 800 },
+      "layout": {
+        "type": "vertical",
+        "padding": 10,
+        "spacing": 10,
+        "children": [
+          {
+            "type": "row",
+            "spacing": 10,
+            "children": [
+              { "type": "text", "content": "Dashboard", "font_size": 24, "font_weight": "bold" },
+              { "type": "spacer" },
+              { "type": "button", "id": "refresh_btn", "label": "Refresh" }
+            ]
+          },
+          {
+            "type": "tabs",
+            "id": "dashboard_tabs",
+            "default_tab": "overview",
+            "tabs": [
+              {
+                "id": "overview",
+                "label": "Overview",
+                "content": {
+                  "type": "grid",
+                  "columns": 12,
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "card",
+                      "title": "Total Users",
+                      "column_span": 3,
+                      "children": [
+                        { "type": "text", "content": "1,234", "font_size": 24, "font_weight": "bold" }
+                      ]
+                    },
+                    {
+                      "type": "card",
+                      "title": "Active Sessions",
+                      "column_span": 3,
+                      "children": [
+                        { "type": "text", "content": "456", "font_size": 24, "font_weight": "bold" }
+                      ]
+                    },
+                    {
+                      "type": "card",
+                      "title": "Revenue (MTD)",
+                      "column_span": 3,
+                      "children": [
+                        { "type": "text", "content": "$45,678", "font_size": 24, "font_weight": "bold" }
+                      ]
+                    },
+                    {
+                      "type": "card",
+                      "title": "Conversion Rate",
+                      "column_span": 3,
+                      "children": [
+                        { "type": "text", "content": "3.42%", "font_size": 24, "font_weight": "bold" }
+                      ]
+                    },
+                    {
+                      "type": "card",
+                      "title": "Recent Transactions",
+                      "column_span": 12,
+                      "children": [
+                        {
+                          "type": "data_grid",
+                          "columns": [
+                            { "id": "id", "label": "ID", "width": 80 },
+                            { "id": "user", "label": "User", "width": 150 },
+                            { "id": "amount", "label": "Amount", "width": 120 },
+                            { "id": "status", "label": "Status", "width": 100 },
+                            { "id": "date", "label": "Date", "width": 150 }
+                          ],
+                          "sortable": true,
+                          "filterable": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "analytics",
+                "label": "Analytics",
+                "content": {
+                  "type": "column",
+                  "spacing": 10,
+                  "children": [
+                    {
+                      "type": "card",
+                      "title": "Traffic Over Time",
+                      "children": [
+                        { "type": "text", "content": "Chart placeholder" }
+                      ]
+                    },
+                    {
+                      "type": "card",
+                      "title": "Top Pages",
+                      "children": [
+                        { "type": "text", "content": "Top pages list" }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "settings",
+                "label": "Settings",
+                "content": {
+                  "type": "column",
+                  "spacing": 10,
+                  "padding": 20,
+                  "children": [
+                    { "type": "checkbox", "id": "email_notify", "label": "Email notifications" },
+                    { "type": "checkbox", "id": "sms_notify", "label": "SMS notifications" },
+                    {
+                      "type": "column",
+                      "spacing": 5,
+                      "children": [
+                        { "type": "text", "content": "Update Frequency", "font_weight": "bold" },
+                        { "type": "radio_group", "id": "frequency", "options": [
+                          { "id": "realtime", "label": "Real-time" },
+                          { "id": "hourly", "label": "Hourly" },
+                          { "id": "daily", "label": "Daily" }
+                        ] }
+                      ]
+                    },
+                    { "type": "button", "id": "save_settings_btn", "label": "Save Settings", "style": "primary" }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

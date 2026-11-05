@@ -1,0 +1,145 @@
+{
+  "app": {
+    "name": "crud_example",
+    "title": "CRUD Application",
+    "version": "1.0.0",
+    "description": "Full create-read-update-delete workflow"
+  },
+  "windows": [
+    {
+      "id": "main_window",
+      "type": "window",
+      "title": "User Management",
+      "size": { "width": 800, "height": 600 },
+      "state_machine": "crud_flow",
+      "layout": {
+        "type": "row",
+        "spacing": 10,
+        "padding": 10,
+        "children": [
+          {
+            "type": "column",
+            "width": 250,
+            "children": [
+              { "type": "text", "content": "Users", "font_weight": "bold" },
+              {
+                "type": "data_grid",
+                "id": "users_list",
+                "columns": [
+                  { "id": "name", "label": "Name", "width": 150 },
+                  { "id": "email", "label": "Email", "width": 350 }
+                ]
+              },
+              {
+                "type": "row",
+                "spacing": 5,
+                "children": [
+                  { "type": "button", "id": "create_btn", "label": "New", "style": "primary" },
+                  { "type": "button", "id": "edit_btn", "label": "Edit", "enabled_when": "item_selected" },
+                  { "type": "button", "id": "delete_btn", "label": "Delete", "enabled_when": "item_selected" }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "column",
+            "grow": true,
+            "children": [
+              {
+                "type": "text",
+                "id": "detail_title",
+                "content": "User Details",
+                "font_weight": "bold",
+                "visible_when": "viewing_or_editing"
+              },
+              {
+                "type": "card",
+                "id": "detail_panel",
+                "visible_when": "viewing_or_editing",
+                "children": [
+                  {
+                    "type": "column",
+                    "spacing": 10,
+                    "children": [
+                      {
+                        "type": "column",
+                        "spacing": 5,
+                        "children": [
+                          { "type": "text", "content": "Name", "font_size": 12 },
+                          { "type": "text_field", "id": "name_field", "placeholder": "Full name" }
+                        ]
+                      },
+                      {
+                        "type": "column",
+                        "spacing": 5,
+                        "children": [
+                          { "type": "text", "content": "Email", "font_size": 12 },
+                          { "type": "email_field", "id": "email_field", "placeholder": "email@example.com" }
+                        ]
+                      },
+                      {
+                        "type": "row",
+                        "spacing": 10,
+                        "children": [
+                          { "type": "button", "id": "save_btn", "label": "Save", "style": "primary", "enabled_when": "form_changed" },
+                          { "type": "button", "id": "cancel_btn", "label": "Cancel" },
+                          { "type": "button", "id": "delete_confirm_btn", "label": "Delete", "style": "danger", "visible_when": "editing" }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "id": "confirm_panel",
+                "title": "Confirm Delete",
+                "visible_when": "confirming_delete",
+                "children": [
+                  { "type": "text", "content": "Are you sure you want to delete this user?" },
+                  {
+                    "type": "row",
+                    "spacing": 10,
+                    "children": [
+                      { "type": "button", "id": "confirm_yes_btn", "label": "Delete", "style": "danger" },
+                      { "type": "button", "id": "confirm_no_btn", "label": "Cancel" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "state_machines": [
+    {
+      "id": "crud_flow",
+      "initial_state": "list_view",
+      "states": [
+        { "id": "list_view", "type": "initial", "description": "Viewing user list" },
+        { "id": "viewing", "description": "Viewing user details" },
+        { "id": "creating", "description": "Creating new user", "entry_action": "clear_form" },
+        { "id": "editing", "description": "Editing user", "entry_action": "populate_form" },
+        { "id": "saving", "description": "Saving changes", "entry_action": "show_spinner" },
+        { "id": "deleting", "description": "Confirming delete" },
+        { "id": "error", "description": "Error occurred", "entry_action": "show_error" }
+      ],
+      "transitions": [
+        { "from": "list_view", "event": "create", "to": "creating" },
+        { "from": "list_view", "event": "item_selected", "to": "viewing" },
+        { "from": "viewing", "event": "edit", "to": "editing" },
+        { "from": "viewing", "event": "delete", "to": "deleting" },
+        { "from": "creating", "event": "save", "to": "saving", "guard": "form_valid" },
+        { "from": "editing", "event": "save", "to": "saving", "guard": "form_valid" },
+        { "from": "saving", "event": "success", "to": "list_view", "action": "refresh_list" },
+        { "from": "saving", "event": "error", "to": "error" },
+        { "from": "deleting", "event": "confirm", "to": "saving" },
+        { "from": "deleting", "event": "cancel", "to": "viewing" },
+        { "from": "error", "event": "retry", "to": "saving" },
+        { "from": "error", "event": "cancel", "to": "list_view" }
+      ]
+    }
+  ]
+}

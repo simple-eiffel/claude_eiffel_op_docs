@@ -1,3 +1,25 @@
+# Eiffel Expert Briefing
+
+**AUTHORITATIVE REFERENCE for all Eiffel development in the simple_* ecosystem.**
+
+---
+
+## BUILD STANDARDS (MANDATORY for All Phases)
+
+**For rules on library selection, F_code finalization, binary placement, and file organization, see:**
+
+👉 **`/d/prod/reference_docs/briefings/BUILD_STANDARDS.md`**
+
+This document is enforced by all eiffel-* skills and covers:
+1. **Prefer simple_* over ISE/Gobo** (all phases)
+2. **F_code finalize with/without -keep** (testing vs production)
+3. **Test binary naming & placement** (bin/test_app.exe with DLLs)
+4. **Input/output file organization** (data/{input,output,expected})
+
+**Do NOT skip this document when implementing or maintaining simple_* libraries.**
+
+---
+
 ## String Conversion Rules (NO OBSOLETE CODE)
 
 **NEVER use implicit `as_string_8` conversions.** Always use explicit conversions:
