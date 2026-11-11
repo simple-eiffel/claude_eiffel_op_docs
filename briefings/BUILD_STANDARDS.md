@@ -462,7 +462,31 @@ What users do in their own programs is their choice; this rule governs the simpl
 
 ---
 
-## 11. Related Documents
+## 11. Changed Contracts Test Their Consumers (Larry, 2026-11-11)
+
+**Larry's rule, in his words** (relayed by EIF-GROUP after a simple_widgets change broke simple_bible; the quotations are his, nothing else in this section is):
+
+> "I am a little surprised that in our GUI tasking we've not sufficiently addressed the issue of downstream consumer simple_* libs being regression tested."
+>
+> "I think it would be a big waste of time/tokens to retest all downstream consumers for each and every push/merge/commit, yes?"
+>
+> "MORE TO THE POINT: Any upstream simple_* lib that changes not just a feature name, but the feature contracts (pre and post-conditions specifically)."
+>
+> "Adding features is not the issue. It's changes to the API and contract demands."
+
+**The fleet's reading of it** (written by the sessions; EIF-GROUP's decisions under the rule, not Larry's words):
+
+1. **Trigger:** a pull request to any simple_* library that changes an EXISTING exported feature's name (or removes it, or makes it secret), its arguments or result type, its export, its precondition or its postcondition, or a class invariant. **Not a trigger:** new features, new classes, contracts on new features, and internal changes that keep every existing contract.
+2. **On a trigger:** find the consumers that call those features (a search across `D:\prod`), and run their test suites with contracts on **before the merge**. Only those consumers, not all.
+3. **No trigger:** no consumer runs; the library's own tests carry it.
+4. **The check:** `scripts/contract_diff.py <repo> [<base> [<head>]]` (in this repository) compares a pull request's exported features with the base and lists each changed or removed one, with its before and after. It exits 0 with an empty list. **Every pull request states the list either way.**
+5. **Each phase end:** one compile round of all consumers, and the full suites of the main two or three (simple_bible first). **At the very end of the GUI plan:** a full pass over every Windows consumer, rebuilt, tested, fixed and released by its owner.
+
+**The first case (2026-11-11):** simple_widgets c430fea added `ends_its_zone` to `SW_DOCK_HOST.move_panel`, a postcondition on an existing feature whose body did not meet it, and simple_bible's GUI suite fell from 60/0 to 12/48. `contract_diff.py` on c430fea lists it (`SW_DOCK_HOST.move_panel: postcondition changed`) among eight changes. Fixed in simple_widgets #74.
+
+---
+
+## 12. Related Documents
 
 - `/d/prod/reference_docs/briefings/EIFFEL_EXPERT_BRIEFING.md` - Language & pattern guidance
 - `/d/prod/reference_docs/analyses/higher-API/EIFFEL_SPEC_KIT_HOWTO.md` - Phase-by-phase workflow
