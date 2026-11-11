@@ -455,6 +455,9 @@ What users do in their own programs is their choice; this rule governs the simpl
 - **Name deviations up front.** A spec lists each platform deviation and its reason before any half is built, so none is discovered late.
 - **Accepted deviations so far:**
   - Command and Option in place of Control and Alt for editor keys on macOS: the platform's keyboard convention.
+  - **Shaped text on Windows keeps ClearType** (Larry, 2026-11-11, decision A; plain text is gray everywhere). Gray through cairo's win32 font backend (GDI grayscale) cuts small-mark contrast below the gate: simple_widgets `gw03_marks_visible`, pointed Hebrew at 14 px, the share of the vowel points' ink at 3:1 or better (needs 25%), is 31% light and 45% dark with ClearType, but 2% and 24% with gray. Linux's FreeType gray passes. The cost: colored fringes in saved or scaled images, and shaped text differs from plain text on Windows. **Removed by** simple_shaping#8 (shaped text through cairo's FreeType backend on Windows), queued by Larry right after 1v-c printing.
+  - **Printing on Windows** (spec 1v-c): the printer's own Preferences choices are not applied; copies are repeated collated jobs; printers named outside ASCII can't be reached; printed text becomes shapes. Removed by simple_pdf#3.
+  - **macOS prints through PDFKit**, not Poppler (Larry, 2026-11-11): the platform's own PDF library, as Linux uses Poppler; checked against Poppler page by page.
 - **Decided under the rule (2026-11-11):**
   - text is drawn with gray antialiasing on every platform (simple_widgets 71);
   - every caret, the primary and the extras, blinks in step on all three and honors each system's no-blink setting;
