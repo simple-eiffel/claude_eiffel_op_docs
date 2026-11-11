@@ -416,7 +416,29 @@ cat reports/TEST_SUITE_REPORT.md
 
 ---
 
-## 9. Related Documents
+## 9. Native Libraries: One Version, One Source, Per DLL Name (Larry, 2026-11-11)
+
+Larry's rule, in his words:
+
+> "ALWAYS ensure that cairo.dll dependent libs use the SAME version. This DLL-hell issue should not be happening!"
+>
+> "NOTE: This ought to be true for any DLL at all and all the time. We don't want to fall into DLL hell ourselves. We cannot stop users. That is their choice. But we can work to prevent it on the simple_* fleet of libs."
+
+**What it means across the simple_* libraries:**
+
+- **One version per DLL name.** A DLL shipped under a given name (`cairo.dll`, `zlib.dll`, `freetype.dll`, …) is one build, byte for byte, everywhere in the fleet. Windows loads only one module of a given name into a process, so two builds under one name is a fault, not a cosmetic difference.
+- **One owner per DLL.** Exactly one library owns each shared binary; every other library takes it from the owner (through the owner's ECF and folder), never by carrying its own copy.
+- **Check before changing.** Before adding, upgrading or copying any DLL, or the import `.lib`/`.a` that pins one, run the fleet inventory. It fails on any name with two hashes, and no pull request that adds or changes a binary merges while it fails.
+- **The owner tests what loads.** The owning library has a test that the version loaded at run time is the expected one.
+- **Linux and macOS:** the same rule in their terms. Link the system's (Ubuntu) or Homebrew's (macOS) shared library, and do not vendor a second copy of one the system provides.
+
+**The first case (2026-11-11):** simple_cairo shipped cairo 1.17.2, a development snapshot that cannot write multi-page PDFs, while simple_pdf shipped cairo 1.18.0. poppler-glib loads `cairo.dll` by name, so a GUI program that prints could have loaded either. Both move to 1.18.0, from one source.
+
+What users do in their own programs is their choice; this rule governs the simple_* fleet.
+
+---
+
+## 10. Related Documents
 
 - `/d/prod/reference_docs/briefings/EIFFEL_EXPERT_BRIEFING.md` - Language & pattern guidance
 - `/d/prod/reference_docs/analyses/higher-API/EIFFEL_SPEC_KIT_HOWTO.md` - Phase-by-phase workflow
