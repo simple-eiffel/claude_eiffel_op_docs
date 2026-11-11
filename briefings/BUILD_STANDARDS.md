@@ -436,9 +436,33 @@ cat reports/TEST_SUITE_REPORT.md
 
 What users do in their own programs is their choice; this rule governs the simple_* fleet.
 
+**Written exceptions to the fleet's reading** (each meets Larry's rule, "the SAME version", and has a test that forbids drift):
+
+- **simple_pdf/bin mirrors simple_cairo's set** (cairo 1.18.0 and its six neighbors), hash-checked by `test_bin_mirrors_the_owners_cairo_set`, because its helper programs (pdftotext, poppler) load DLLs from their own folder. Removed when staging lands: [simple_pdf issue 1](https://github.com/simple-eiffel/simple_pdf/issues/1).
+
 ---
 
-## 10. Related Documents
+## 10. Same on Every Platform (Larry, 2026-11-11)
+
+**Larry's rule, in his words** (relayed by EIF-GROUP when he decided gray text antialiasing for Windows; the quotation is his, nothing else in this section is):
+
+> "Yes, gray on Windows as well. There's no reason Windows ought to differ if we can make them all the same (e.g. each platform). This thinking ought to guide just about everything. The only platform deviations ought to be those that clearly cannot be helped or a just too much work for very little payoff or benefit."
+
+**The fleet's reading of it** (written by the sessions; EIF-GROUP's decisions under the rule, not Larry's words):
+
+- **Same behavior and same look on Windows, Linux and macOS** for every simple_* library and program, by default.
+- **When you meet a platform difference, remove it; don't document it.** Keep one only where it clearly cannot be helped, or where the work far outweighs the benefit, and then write it down where it lives, with its reason, and bring it to EIF-GROUP.
+- **Name deviations up front.** A spec lists each platform deviation and its reason before any half is built, so none is discovered late.
+- **Accepted deviations so far:**
+  - Command and Option in place of Control and Alt for editor keys on macOS: the platform's keyboard convention.
+- **Decided under the rule (2026-11-11):**
+  - text is drawn with gray antialiasing on every platform (simple_widgets 71);
+  - every caret, the primary and the extras, blinks in step on all three and honors each system's no-blink setting;
+  - a folded line shows "…" on all three.
+
+---
+
+## 11. Related Documents
 
 - `/d/prod/reference_docs/briefings/EIFFEL_EXPERT_BRIEFING.md` - Language & pattern guidance
 - `/d/prod/reference_docs/analyses/higher-API/EIFFEL_SPEC_KIT_HOWTO.md` - Phase-by-phase workflow
