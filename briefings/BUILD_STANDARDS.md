@@ -494,6 +494,10 @@ What users do in their own programs is their choice; this rule governs the simpl
 
 **The first case (2026-11-11):** simple_widgets c430fea added `ends_its_zone` to `SW_DOCK_HOST.move_panel`, a postcondition on an existing feature whose body did not meet it, and simple_bible's GUI suite fell from 60/0 to 12/48. `contract_diff.py` on c430fea lists it (`SW_DOCK_HOST.move_panel: postcondition changed`) among eight changes. Fixed in simple_widgets #74.
 
+**Shared checkouts stay on their default branches (EIF-GROUP, 2026-11-12).** The checkouts in `D:\prod` are read by other sessions (INCIPIT builds simple_bible installers from them), by MACMINI's hand-offs and by Larry's own builds. Never switch one to another branch, not even briefly. Do branch work in a git worktree of your own under `D:\prod\_wt` (`git worktree add D:\prod\_wt\<lib> <branch>`), and build against a tree of junctions, `D:\prod\_wt\tree`, whose entries point at `D:\prod`, except the libraries you are changing, which point at your worktrees. Set `SIMPLE_EIFFEL` to that tree (ec.sh and ec_linux.sh honor it), and build a consumer you only test, such as simple_bible's GUI suite, in a worktree of its own, so its owner's EIFGENs are untouched. *Why:* on 2026-11-12, a branch switched in the shared simple_shaping checkout was compiled into a simple_bible build that was installed on Larry's machine.
+
+**Test programs use the fleet DLLs.** Run every test program that loads cairo with `simple_cairo\runtime\windows` first on PATH, or with its seven DLLs beside the exe, and check what loaded (`(Get-Process <name>).Modules`). With the plain PATH, a test run on 2026-11-12 loaded cairo from Simple Bible's install, FreeType from Graphviz and zlib from Git.
+
 ---
 
 ## 12. Related Documents
